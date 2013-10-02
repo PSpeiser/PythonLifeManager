@@ -2,14 +2,14 @@ from django.db import models
 
 
 class Food(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     kcal_per_100g = models.IntegerField()
     grams = models.IntegerField()
     hidden = models.BooleanField()
 
     @property
     def total_kcal(self):
-        return self.kcalper100g / 100.0 * self.grams
+        return self.kcal_per_100g * self.grams / 100.0
 
     def __unicode__(self):
         return self.name
@@ -20,4 +20,4 @@ class Meal(models.Model):
     date = models.DateTimeField()
 
     def __unicode__(self):
-        return str(self.food) + ' ' + str(self.date)
+        return '%s | %s | %s' % (self.date.strftime('%H:%M'), self.food.name, self.food.total_kcal)
