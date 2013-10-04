@@ -119,7 +119,7 @@ class Week():
     def __init__(self, begin):
         self.begin = begin
         self.end = begin + timedelta(days=6, hours=23, minutes=59, seconds=59)
-        self.days = [Day(begin + timedelta(days=i)) for i in range(0, 6)]
+        self.days = [Day(begin + timedelta(days=i)) for i in range(0, 7)]
 
     @property
     def total_kcal(self):
@@ -129,7 +129,7 @@ class Week():
         return self.begin <= date <= self.end
 
     def __unicode__(self):
-        return '%s-%s | %s' % (self.begin.strftime('%Y.%m.%d'), self.end.strftime('%d'), str(self.total_kcal))
+        return '%s-%s | %s' % (self.begin.strftime('%Y.%m.%d'), self.end.strftime('%d'), str(int(self.total_kcal)))
 
     def __str__(self):
         return unicode(self).encode('utf-8')
@@ -149,7 +149,7 @@ class Day():
         return self.begin <= date <= self.end
 
     def __unicode__(self):
-        return '%s | %s' % (self.begin.strftime('%Y.%m.%d'), str(self.total_kcal))
+        return '%s | %s' % (self.begin.strftime('%Y.%m.%d'), str(int(self.total_kcal)))
 
     def __str__(self):
         return unicode(self).encode('utf-8')
