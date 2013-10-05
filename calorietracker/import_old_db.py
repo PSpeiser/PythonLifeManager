@@ -15,11 +15,11 @@ def import_old_db(request):
     c.execute("SELECT * FROM meals")
     meals = c.fetchall()
     for meal in meals:
-        m = Meal(id=meal[0], food=Food.objects.get(pk=meal[1]), date=meal[2])
+        m = Meal(id=meal[0], food=Food.objects.get(pk=meal[1]), date=meal[2].split('.')[0])
         m.save()
     c.close()
     conn.close()
-    return HttpResponse(str(meals))
+    return HttpResponse("Imported %d foods, %d meals" % (Food.objects.count(), Meal.objects.Count()))
 
 
 def delete_current_db():

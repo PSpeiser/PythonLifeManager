@@ -1,5 +1,5 @@
 from django.db import models
-
+import math
 
 class Food(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -9,7 +9,7 @@ class Food(models.Model):
 
     @property
     def total_kcal(self):
-        return self.kcal_per_100g * self.grams / 100.0
+        return int(math.floor(self.kcal_per_100g * self.grams / 100.0))
 
     def __unicode__(self):
         return self.name
