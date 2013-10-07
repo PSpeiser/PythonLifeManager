@@ -19,7 +19,7 @@ def import_old_db(request):
         m.save()
     c.close()
     conn.close()
-    return HttpResponse("Imported %d foods, %d meals" % (Food.objects.count(), Meal.objects.Count()))
+    return HttpResponse("Imported %d foods, %d meals" % (Food.objects.count(), Meal.objects.count()))
 
 
 def delete_current_db():

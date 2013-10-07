@@ -7,7 +7,7 @@ from django.template import RequestContext, loader
 
 
 def index(request):
-    template = loader.get_template('table.html')
+    template = loader.get_template('calorietracker.html')
     context = RequestContext(request, {
     })
     return HttpResponse(template.render(context))
@@ -60,12 +60,12 @@ def jstree_json(request):
     d = []
     for week in weeks:
         d3week = {'data': str(week), 'children': [],
-                  'attr': {'jstree_color': 'red' if week.total_kcal > 1500 * 7 else 'green'}}
+                  'attr': {'class': 'week', 'jstree_color': 'red' if week.total_kcal > 1500 * 7 else 'green'}}
         for day in week.days:
             d3day = {'data': str(day), 'children': [],
-                     'attr': {'jstree_color': 'red' if day.total_kcal > 1500 else 'green'}}
+                     'attr': {'class': 'day', 'jstree_color': 'red' if day.total_kcal > 1500 else 'green'}}
             for meal in day.meals:
-                d3meal = {'data': str(meal)}
+                d3meal = {'data': str(meal), 'attr': {'class': 'meal', 'mealid': meal.id}}
                 d3day['children'].append(d3meal)
                 #don't allow empty children lists
             if len(d3day['children']) == 0:
