@@ -16,6 +16,10 @@
             font-size: 10px;
         }
 
+        body {
+            font: 10px sans-serif;
+        }
+
         .axis path,
         .axis line {
             fill: none;
@@ -23,9 +27,17 @@
             shape-rendering: crispEdges;
         }
 
-        line.cutoff {
-            stroke: black;
+        path {
+            stroke: steelblue !important;
             stroke-width: 2;
+            stroke-width: 1.5px;
+            fill: none;
+        }
+
+        .threshold_line {
+            stroke: red;
+            stroke-width: 1.5px;
+            stroke-opacity: 1;
         }
 
         path.data {
@@ -43,13 +55,14 @@
 </div>
 <script>
     var parseDate = d3.time.format("%Y-%m-%d").parse;
-    var margin = { 'left': 30, 'bottom': 20, 'top': 15, 'right': 240 },
-            width = 700,
-            height = 135,
+    var margin = { 'left': 40, 'bottom': 20, 'top': 15, 'right': 0 },
+            width = 640,
+            height = 480,
             w = width - margin.left - margin.right,
             h = height - margin.top - margin.bottom,
             clip = null;
 
+    var maxWidth = margin.width;
     d3.json("plot.json", function (error, data) {
         data.forEach(function (d) {
             d.date = parseDate(d.date);
@@ -58,23 +71,22 @@
 
         test = data;
 
-        var svg = d3.select("#svg_placeholder")
+        svg = d3.select("#svg_placeholder")
                 .append("svg")
-                .attr("width", 700)
-                .attr("height", 1305);
+                .attr("width", width)
+                .attr("height", height)
+                .attr('cursor', 'move');
 
         var dateExtent = d3.extent(data, function (d) {
             return d.date
         });
-        var xscale = d3.time.scale().domain(dateExtent).range([0, 960]);
-
-
         var timeDiff = Math.abs(dateExtent[0].getTime() - dateExtent[1].getTime());
         var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-        var maxWidth = diffDays * 10;
+        maxWidth = diffDays * 10;
 
+        var xscale = d3.time.scale().domain(dateExtent).range([0, maxWidth]);
         var yscale = d3.scale.linear()
-                .range([height, 0])
+                .range([h, 0])
                 .domain(d3.extent(data, function (d) {
                     return d.kcal;
                 }));
@@ -99,20 +111,76 @@
                     tx = Math.min(tx, 0);
                     tx = Math.max(tx, width - maxWidth);
 
-                    ty = 1;
+                    //lock y in place
+                    ty = 0;
                     zoom.translate([tx, ty]);
 
                     svg.select('.data').attr('d', line);
+                    svg.select("g.x.axis").call(xaxis);
+                    svg.select("g.y.axis").call(yaxis);
                 });
 
 
         svg.call(zoom);
 
+        //add path clipping element
+        svg.append("g").append("clipPath")
+                .attr("id", "clip")
+                .append("rect")
+                .attr("width", maxWidth)
+                .attr("height", h)
+                .attr("transform", "translate(" + margin.left + "," + 0 + ")");
+
+        //draw threshold line
+        svg.append("g")
+                .attr("clip-path", "url(#clip)")
+                .append('line')
+                .attr({
+                    x1: xscale(xscale.domain()[0]),
+                    y1: yscale(1500),
+                    x2: xscale(xscale.domain()[1]),
+                    y2: yscale(1500),
+                    class: "threshold_line"
+                });
+
+        //draw path
         svg.append('g')
+                .attr("clip-path", "url(#clip)")
                 .datum(data)
                 .append('path')
                 .attr('class', 'data')
                 .attr('d', line);
+
+
+        var xaxis = d3.svg.axis()
+                .scale(xscale)
+                .orient("bottom")
+                .ticks(d3.time.weeks, 1);
+
+        svg.append("g")
+                .attr("clip-path", "url(#clip)")
+                .attr("class", "x axis")
+                .attr("transform", "translate(" + 0 + "," + h + ")")
+                .call(xaxis);
+
+        var yaxis = d3.svg.axis()
+                .scale(yscale)
+                .orient("left")
+                .tickFormat(d3.format("f"))
+
+        //draw y axis
+        svg.append("g")
+                .attr("class", "y axis")
+                .call(yaxis)
+                .attr("transform", "translate(" + margin.left + "," + 0 + ")")
+                .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", "0.5em")
+                .append("text")
+                .text("KCal");
+
+
     });
 </script>
 </body>

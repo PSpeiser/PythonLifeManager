@@ -31,6 +31,34 @@
             stroke-width: 1.5px;
         }
 
+        .axis path,
+        .axis line,
+        .domain {
+            fill: none;
+            stroke: black;
+            shape-rendering: crispEdges;
+            stroke-width: 1px;
+        }
+
+        path {
+            stroke: steelblue;
+            stroke-width: 2;
+            stroke-width: 1.5px;
+            fill: none;
+        }
+
+        .threshold_line {
+            stroke: red;
+            stroke-width: 1.5px;
+            stroke-opacity: 1;
+        }
+
+        path.data {
+            fill: transparent;
+            stroke: grey;
+            stroke-width: 2;
+        }
+
         .threshold_line {
             stroke: red;
             stroke-width: 1.5px;
@@ -129,23 +157,26 @@
 
 </script>
 <script>
-    //implement http://bl.ocks.org/stepheneb/1182434
-    var margin = {top: 20, right: 20, bottom: 30, left: 50},
-            width = 640 - margin.left - margin.right,
-            height = 480 - margin.top - margin.bottom;
-
     var parseDate = d3.time.format("%Y-%m-%d").parse;
+    var margin = { 'left': 40, 'bottom': 20, 'top': 15, 'right': 0 },
+            width = 640,
+            height = 480,
+            w = width - margin.left - margin.right,
+            h = height - margin.top - margin.bottom,
+            clip = null;
 
-    var xScale = null;
-    var yScale = null;
-    var xAxis = null;
-    var yAxis = null;
-    var svg = null;
-
-
-    function zoomed() {
-        svg.select(".x.axis").call(xAxis);
-        svg.select(".y.axis").call(yAxis);
+    var maxWidth = margin.width;
+    var xaxis = null;
+    var yaxis = null;
+    var line = null;
+    function rescale(tx, ty) {
+        //rescale path
+        svg.select('.data').attr('d', line);
+        //rescale axes
+        svg.select("g.x.axis").call(xaxis);
+        svg.select("g.y.axis").call(yaxis);
+        //rescale dots
+        svg.selectAll(".dot").attr("transform", "translate(" + tx + "," + ty + ")");
     }
 
     d3.json("plot.json", function (error, data) {
@@ -153,89 +184,109 @@
             d.date = parseDate(d.date);
             d.kcal = +d.kcal;
         });
-        test = data;
-        xScale = d3.time.scale()
-                .domain(d3.extent(data, function (d) {
-                    return d.date
-                }))
-                .range([0, width]);
 
-        yScale = d3.scale.linear()
-                .range([height, 0])
+        test = data;
+
+        svg = d3.select("#svg_placeholder")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr('cursor', 'move')
+                .append("svg:g");
+
+
+        var dateExtent = d3.extent(data, function (d) {
+            return d.date
+        });
+        var timeDiff = Math.abs(dateExtent[0].getTime() - dateExtent[1].getTime());
+        var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        maxWidth = diffDays * 10;
+
+        var xscale = d3.time.scale().domain(dateExtent).range([0, maxWidth]);
+        var yscale = d3.scale.linear()
+                .range([h, 0])
                 .domain(d3.extent(data, function (d) {
                     return d.kcal;
                 }));
 
-
-        xAxis = d3.svg.axis()
-                .scale(xScale)
-                .orient("bottom")
-                .ticks(d3.time.months, 1);
-
-        yAxis = d3.svg.axis()
-                .scale(yScale)
-                .orient("left");
-
-        var line = d3.svg.line()
+        line = d3.svg.line()
                 .x(function (d) {
-                    return xScale(d.date);
+                    return xscale(d.date);
                 })
                 .y(function (d) {
-                    return yScale(d.kcal);
+                    return yscale(d.kcal);
                 });
 
-        var zoom = d3.behavior.zoom()
-                .scaleExtent([1, 1])
-                .x(xScale)
-                .on('zoom', function () {
-                    svg.select('.data').attr('d', line)
-                });
 
-        svg = d3.select("#svg_placeholder").append("svg").attr("id", "chart")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-                .call(zoom);
+        //add path clipping element
+        svg.append("g").append("clipPath")
+                .attr("id", "clip")
+                .append("rect")
+                .attr("width", maxWidth)
+                .attr("height", h)
+                .attr("transform", "translate(" + margin.left + "," + 0 + ")")
 
-
-        svg.append('line')
+        //draw threshold line
+        svg.append("g")
+                .attr("clip-path", "url(#clip)")
+                .append('line')
                 .attr({
-                    x1: xScale(xScale.domain()[0]),
-                    y1: yScale(1500),
-                    x2: xScale(xScale.domain()[1]),
-                    y2: yScale(1500),
+                    x1: xscale(xscale.domain()[0]),
+                    y1: yscale(1500),
+                    x2: xscale(xscale.domain()[1]),
+                    y2: yscale(1500),
                     class: "threshold_line"
                 });
 
-        //draw x axis
+        //draw path
+        svg.append('g')
+                .attr("clip-path", "url(#clip)")
+                .datum(data)
+                .append('path')
+                .attr('class', 'data')
+                .attr('d', line);
+
+
+        xaxis = d3.svg.axis()
+                .scale(xscale)
+                .orient("bottom")
+                .ticks(d3.time.weeks, 1);
+
         svg.append("g")
+                .attr("clip-path", "url(#clip)")
                 .attr("class", "x axis")
-                .attr("transform", "translate(0," + height + ")")
-                .call(xAxis);
+                .attr("transform", "translate(" + 0 + "," + h + ")")
+                .call(xaxis);
+
+        yaxis = d3.svg.axis()
+                .scale(yscale)
+                .orient("left")
+                .tickFormat(d3.format("f"))
 
         //draw y axis
         svg.append("g")
                 .attr("class", "y axis")
+                .call(yaxis)
+                .attr("transform", "translate(" + margin.left + "," + 0 + ")")
                 .append("text")
                 .attr("transform", "rotate(-90)")
                 .attr("y", 6)
-                .attr("dy", ".71em")
-                .style("text-anchor", "end")
-                .text("KCal")
-                .call(yAxis);
+                .attr("dy", "0.5em")
+                .append("text")
+                .text("KCal");
 
         //draw dots for data points
-        svg.selectAll(".dot")
+        svg.append("g").attr("clip-path", "url(#clip)")
+                .selectAll(".dot")
                 .data(data)
                 .enter().append("circle")
                 .attr("class", "dot")
                 .attr("r", 3.5)
                 .attr("cx", function (d) {
-                    return xScale(d.date);
+                    return xscale(d.date);
                 })
                 .attr("cy", function (d) {
-                    return yScale(d.kcal);
+                    return yscale(d.kcal);
                 })
                 .style("fill", function (d) {
                     return 'black';
@@ -244,14 +295,32 @@
                 .text(function (d) {
                     return d.kcal
                 });
+        var zoom = d3.behavior.zoom()
+                .scaleExtent([1, 1])
+                .x(xscale)
+                .y(yscale)
+                .on('zoom', function () {
+                    var t = zoom.translate(),
+                            tx = t[0],
+                            ty = t[1];
 
+                    tx = Math.min(tx, 0);
+                    tx = Math.max(tx, width - maxWidth);
 
-        svg.append("path")
-                .datum(data)
-                .attr("class", "line")
-                .attr("d", line);
+                    //lock y in place
+                    ty = 0;
+                    zoom.translate([tx, ty]);
+                    rescale(tx,ty);
+
+                });
+        //pan all the way to the right initially
+        var tx = width - maxWidth;
+        var ty = 0;
+        zoom.translate([tx, ty]);
+        rescale(tx,ty);
+        svg.call(zoom);
+
     });
-
 </script>
 <script>
     $(document).ready(function () {
