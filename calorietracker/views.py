@@ -4,6 +4,9 @@ from django.core import serializers
 from datetime import datetime, timedelta
 import json
 from django.template import RequestContext, loader
+from django.views.decorators.cache import cache_page
+from django.views.decorators.cache import patch_cache_control
+from functools import wraps
 
 
 def index(request):
@@ -21,6 +24,12 @@ def meals_json(request):
 
 def test_json(request):
     return HttpResponse("")
+
+
+def test(request):
+    template = loader.get_template('test.html')
+    context = RequestContext(request, {})
+    return HttpResponse(template.render(context))
 
 
 def weeks_json(request):
@@ -53,10 +62,38 @@ def get_weeks():
     return weeks
 
 
+def no_client_cache(decorated_function):
+    """Like Django @never_cache but sets more valid cache disabling headers.
+
+    @never_cache only sets Cache-Control:max-age=0 which is not
+    enough. For example, with max-age=0 Firefox returns cached results
+    of GET calls when it is restarted.
+    """
+
+    @wraps(decorated_function)
+    def wrapper(*args, **kwargs):
+        response = decorated_function(*args, **kwargs)
+        patch_cache_control(
+            response, no_cache=True, no_store=True, must_revalidate=True,
+            max_age=0)
+        return response
+
+    return wrapper
+
+
+def food_json(request):
+    data = []
+    for food in Food.objects.all().order_by('name'):
+        data.append([food.id, food.name, food.total_kcal])
+    d = {'aaData': data}
+    output = json.dumps(d, indent=2)
+    return HttpResponse(output, content_type='application/json')
+
+
+@no_client_cache
+@cache_page(60 * 15)
 def jstree_json(request):
     weeks = get_weeks()
-
-    #convert to d3js format
     d = []
     for week in weeks:
         d3week = {'data': str(week), 'children': [],
@@ -67,14 +104,17 @@ def jstree_json(request):
             for meal in day.meals:
                 d3meal = {'data': str(meal), 'attr': {'class': 'meal', 'mealid': meal.id}}
                 d3day['children'].append(d3meal)
-                #don't allow empty children lists
+
+            #don't allow empty children lists
             if len(d3day['children']) == 0:
                 del d3day['children']
-                #expand current day by default
+
+            #expand current day by default
             if 'children' in d3day and day.contains(datetime.now()):
                 d3day['state'] = 'open'
             d3week['children'].append(d3day)
-            #expand current week by default
+
+        #expand current week by default
         if week.contains(datetime.now()):
             d3week['state'] = 'open'
 
@@ -82,18 +122,28 @@ def jstree_json(request):
     d = d[::-1]
 
     output = json.dumps(d, indent=2, cls=MyEncoder)
-    return HttpResponse(output, content_type='application/json')
+    response = HttpResponse(output, content_type='application/json')
+    return response
 
 
+@no_client_cache
+@cache_page(60 * 15)
 def plot_json(request):
     weeks = get_weeks()
     datapoints = []
     for week in weeks:
         for day in week.days:
-            if day.begin <= datetime.now():
+            if datetime.now() >= day.begin:
                 datapoints.append({"date": day.begin.strftime("%Y-%m-%d"), "kcal": day.total_kcal})
     output = json.dumps(datapoints, indent=2, cls=MyEncoder)
     return HttpResponse(output, content_type='application/json')
+
+
+def invalidate_cache(request):
+    from django.core.cache import cache
+
+    output = cache.clear()
+    return HttpResponse(str(output))
 
 
 class Week():
@@ -141,17 +191,10 @@ class MyEncoder(json.JSONEncoder):
         if isinstance(obj, datetime):
             return obj.isoformat()
         if isinstance(obj, Week):
-            return {'begin': obj.begin,
-                    'end': obj.end,
-                    'days': obj.days,
-                    'total_kcal': obj.total_kcal,
-            }
+            return {'begin': obj.begin, 'end': obj.end, 'days': obj.days, 'total_kcal': obj.total_kcal}
         if isinstance(obj, Day):
-            return {'begin': obj.begin,
-                    'end': obj.end,
-                    'meals': obj.meals,
-                    'total_kcal': obj.total_kcal,
-            }
+            return {'begin': obj.begin, 'end': obj.end, 'meals': obj.meals, 'total_kcal': obj.total_kcal}
+
         if isinstance(obj, Meal):
             d = instance_dict(obj)
             d['total_kcal'] = obj.food.total_kcal

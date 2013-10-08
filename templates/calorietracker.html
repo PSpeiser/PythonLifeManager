@@ -4,6 +4,7 @@
     <script src="/static/jquery.js"></script>
     <script src="/static/jquery.jstree.js"></script>
     <script src="/static/d3.v3.js"></script>
+    <script src="/static/jquery.dataTables.js"></script>
     <style>
         .red {
             background-color: #B22222;
@@ -40,12 +41,34 @@
             width: 300px;
             float: left;
             border: 1px ridge darkgray;
-            margin-right: 5px;
+            margin: 2px;
             padding: 5px;
         }
 
-        #chart {
+        #wrapper {
+            overflow: hidden;
+        }
+
+        #svg_placeholder {
+            float: left;
             border: 1px ridge darkgray;
+            margin: 2px;
+        }
+
+        #table_wrapper {
+            float: left;
+            max-width: 178px;
+            overflow: auto;
+            margin: 2px;
+            border: 1px ridge darkgray;
+            padding: 5px;
+
+        }
+
+        #table_processing {
+            height: 0px;
+            padding: 0px;
+            margin: 0px;
         }
 
     </style>
@@ -53,6 +76,18 @@
 <body>
 <div id="wrapper">
     <div id="tree" class="jstree"></div>
+    <div id="svg_placeholder"></div>
+    <table id="table" cellpadding="1" cellspacing="1" border="1">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>KCal</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
 </div>
 <script>
     $(function () {
@@ -77,17 +112,16 @@
                     if (node.hasClass('day') || node.hasClass('week')) {
                         $("#tree").jstree("toggle_node", node);
                     }
-                    else if (node.hasClass('meal'))
-                    {
+                    else if (node.hasClass('meal')) {
                         //open a menu to delete the node here
                         alert(node.attr('mealid'));
                     }
                 })
                 .bind("loaded.jstree", function (event, data) {
                     $("a").each(function () {
-                        var parentcolor = $(this).parent().attr("jstree_color")
-                        if (parentcolor !== undefined) {
-                            $(this).attr('class', parentcolor);
+                        var parent_color = $(this).parent().attr("jstree_color")
+                        if (parent_color !== undefined) {
+                            $(this).attr('class', parent_color);
                         }
                     })
                 });
@@ -95,102 +129,160 @@
 
 </script>
 <script>
-
+    //implement http://bl.ocks.org/stepheneb/1182434
     var margin = {top: 20, right: 20, bottom: 30, left: 50},
-            width = 960 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
+            width = 640 - margin.left - margin.right,
+            height = 480 - margin.top - margin.bottom;
 
     var parseDate = d3.time.format("%Y-%m-%d").parse;
 
-    var x = d3.time.scale()
-            .range([0, width]);
+    var xScale = null;
+    var yScale = null;
+    var xAxis = null;
+    var yAxis = null;
+    var svg = null;
 
-    var y = d3.scale.linear()
-            .range([height, 0]);
 
-    var xAxis = d3.svg.axis()
-            .scale(x)
-            .orient("bottom");
-
-    var yAxis = d3.svg.axis()
-            .scale(y)
-            .orient("left");
-
-    var line = d3.svg.line()
-            .x(function (d) {
-                return x(d.date);
-            })
-            .y(function (d) {
-                return y(d.kcal);
-            });
-
-    var svg = d3.select("#wrapper").append("svg").attr("id", "chart")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
+    function zoomed() {
+        svg.select(".x.axis").call(xAxis);
+        svg.select(".y.axis").call(yAxis);
+    }
 
     d3.json("plot.json", function (error, data) {
         data.forEach(function (d) {
             d.date = parseDate(d.date);
-            d.close = +d.kcal;
+            d.kcal = +d.kcal;
         });
+        test = data;
+        xScale = d3.time.scale()
+                .domain(d3.extent(data, function (d) {
+                    return d.date
+                }))
+                .range([0, width]);
 
-        x.domain(d3.extent(data, function (d) {
-            return d.date;
-        }));
-        y.domain(d3.extent(data, function (d) {
-            return d.kcal;
-        }));
+        yScale = d3.scale.linear()
+                .range([height, 0])
+                .domain(d3.extent(data, function (d) {
+                    return d.kcal;
+                }));
+
+
+        xAxis = d3.svg.axis()
+                .scale(xScale)
+                .orient("bottom")
+                .ticks(d3.time.months, 1);
+
+        yAxis = d3.svg.axis()
+                .scale(yScale)
+                .orient("left");
+
+        var line = d3.svg.line()
+                .x(function (d) {
+                    return xScale(d.date);
+                })
+                .y(function (d) {
+                    return yScale(d.kcal);
+                });
+
+        var zoom = d3.behavior.zoom()
+                .scaleExtent([1, 1])
+                .x(xScale)
+                .on('zoom', function () {
+                    svg.select('.data').attr('d', line)
+                });
+
+        svg = d3.select("#svg_placeholder").append("svg").attr("id", "chart")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                .call(zoom);
+
 
         svg.append('line')
                 .attr({
-                    x1: x(x.domain()[0]),
-                    y1: y(1500),
-                    x2: x(x.domain()[1]),
-                    y2: y(1500),
+                    x1: xScale(xScale.domain()[0]),
+                    y1: yScale(1500),
+                    x2: xScale(xScale.domain()[1]),
+                    y2: yScale(1500),
                     class: "threshold_line"
                 });
 
+        //draw x axis
         svg.append("g")
                 .attr("class", "x axis")
                 .attr("transform", "translate(0," + height + ")")
                 .call(xAxis);
 
+        //draw y axis
         svg.append("g")
                 .attr("class", "y axis")
-                .call(yAxis)
                 .append("text")
                 .attr("transform", "rotate(-90)")
                 .attr("y", 6)
                 .attr("dy", ".71em")
                 .style("text-anchor", "end")
-                .text("KCal");
+                .text("KCal")
+                .call(yAxis);
 
+        //draw dots for data points
         svg.selectAll(".dot")
                 .data(data)
                 .enter().append("circle")
                 .attr("class", "dot")
                 .attr("r", 3.5)
                 .attr("cx", function (d) {
-                    return x(d.date);
+                    return xScale(d.date);
                 })
                 .attr("cy", function (d) {
-                    return y(d.kcal);
+                    return yScale(d.kcal);
                 })
                 .style("fill", function (d) {
                     return 'black';
+                })
+                .append("svg:title")
+                .text(function (d) {
+                    return d.kcal
                 });
+
 
         svg.append("path")
                 .datum(data)
                 .attr("class", "line")
                 .attr("d", line);
-
     });
 
-
+</script>
+<script>
+    $(document).ready(function () {
+        oTable = $('#table').dataTable({
+            bProcessing: true,
+            sAjaxSource: 'food.json',
+            "aoColumns": [
+                /* ID */   { "bSearchable": false, "bVisible": false },
+                /* Name */  null,
+                /* KCal */ null
+            ],
+            bSort: false,
+            "bFilter": false,
+            "bInfo": false,
+            bAutoWidth: false,
+            sScrollX: 'auto',
+            sScrollY: "300px",
+            bScrollCollapse: true,
+            bPaginate: false,
+            fnDrawCallback: function () {
+                clickRowHandler();
+            }});
+    });
+    function clickRowHandler() {
+        $('#table tbody tr').bind('dblclick', function () {
+                    var aData = oTable.fnGetData(this);
+                    var iId = aData[0];
+                    alert(iId);
+                }
+        );
+    }
 </script>
 </body>
 </html>

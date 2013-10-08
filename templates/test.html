@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="/static/jquery.js"></script>
+    <script src="/static/d3.v3.js"></script>
+    <style>
+        .line {
+            fill: none;
+            stroke: steelblue;
+            stroke-width: 1.5px;
+        }
+
+        svg {
+            font-family: "Helvetica Neue", Helvetica, Aria, sans-serif;
+            font-size: 10px;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: black;
+            shape-rendering: crispEdges;
+        }
+
+        line.cutoff {
+            stroke: black;
+            stroke-width: 2;
+        }
+
+        path.data {
+            fill: transparent;
+            stroke: grey;
+            stroke-width: 2;
+        }
+    </style>
+</head>
+<body>
+<div id="svg_placeholder">
+</div>
+<div>
+    TestText
+</div>
+<script>
+    var parseDate = d3.time.format("%Y-%m-%d").parse;
+    var margin = { 'left': 30, 'bottom': 20, 'top': 15, 'right': 240 },
+            width = 700,
+            height = 135,
+            w = width - margin.left - margin.right,
+            h = height - margin.top - margin.bottom,
+            clip = null;
+
+    d3.json("plot.json", function (error, data) {
+        data.forEach(function (d) {
+            d.date = parseDate(d.date);
+            d.kcal = +d.kcal;
+        });
+
+        test = data;
+
+        var svg = d3.select("#svg_placeholder")
+                .append("svg")
+                .attr("width", 700)
+                .attr("height", 1305);
+
+        var dateExtent = d3.extent(data, function (d) {
+            return d.date
+        });
+        var xscale = d3.time.scale().domain(dateExtent).range([0, 960]);
+
+
+        var timeDiff = Math.abs(dateExtent[0].getTime() - dateExtent[1].getTime());
+        var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        var maxWidth = diffDays * 10;
+
+        var yscale = d3.scale.linear()
+                .range([height, 0])
+                .domain(d3.extent(data, function (d) {
+                    return d.kcal;
+                }));
+
+        var line = d3.svg.line()
+                .x(function (d) {
+                    return xscale(d.date);
+                })
+                .y(function (d) {
+                    return yscale(d.kcal);
+                });
+
+        var zoom = d3.behavior.zoom()
+                .scaleExtent([1, 1])
+                .x(xscale)
+                .y(yscale)
+                .on('zoom', function () {
+                    var t = zoom.translate(),
+                            tx = t[0],
+                            ty = t[1];
+
+                    tx = Math.min(tx, 0);
+                    tx = Math.max(tx, width - maxWidth);
+
+                    ty = 1;
+                    zoom.translate([tx, ty]);
+
+                    svg.select('.data').attr('d', line);
+                });
+
+
+        svg.call(zoom);
+
+        svg.append('g')
+                .datum(data)
+                .append('path')
+                .attr('class', 'data')
+                .attr('d', line);
+    });
+</script>
+</body>
+</html>

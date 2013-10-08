@@ -9,8 +9,10 @@ urlpatterns = patterns('',
                        url(r'^weeks.json', views.weeks_json, name='weeks.json'),
                        url(r'jstree.json', views.jstree_json, name='jstree.json'),
                        url(r'import_old_db', import_old_db.import_old_db, name='import_old_db'),
-                       url(r'plot.json',views.plot_json,name='plot.json')
-
+                       url(r'plot.json', views.plot_json, name='plot.json'),
+                       url(r'invalidate_cache', views.invalidate_cache, name='invalidate_cache'),
+                       url(r'food.json', views.food_json, name='food.json'),
+                       url(r'test',views.test,name='test'),
 
 
 )
