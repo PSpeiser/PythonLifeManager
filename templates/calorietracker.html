@@ -5,6 +5,8 @@
     <script src="/static/jquery.jstree.js"></script>
     <script src="/static/d3.v3.js"></script>
     <script src="/static/jquery.dataTables.js"></script>
+    <script src="/static/ui/jquery-ui.js"></script>
+    <link rel="stylesheet" href="/static/themes/base/jquery-ui.css">
     <style>
         .red {
             background-color: #B22222;
@@ -118,6 +120,15 @@
     </table>
 </div>
 <script>
+    /*
+     .......##..######..########.########..########.########
+     .......##.##....##....##....##.....##.##.......##......
+     .......##.##..........##....##.....##.##.......##......
+     .......##..######.....##....########..######...######..
+     .##....##.......##....##....##...##...##.......##......
+     .##....##.##....##....##....##....##..##.......##......
+     ..######...######.....##....##.....##.########.########
+     */
     $(function () {
         $("#tree").jstree({
             "core": {
@@ -141,8 +152,23 @@
                         $("#tree").jstree("toggle_node", node);
                     }
                     else if (node.hasClass('meal')) {
-                        //open a menu to delete the node here
-                        alert(node.attr('mealid'));
+                        $(function () {
+                            $("#dialog-confirm").text('Delete ' + node.text() + ' ?').dialog({
+                                resizable: false,
+                                height: 130,
+                                modal: true,
+                                buttons: {
+                                    "Remove meal": function () {
+                                        //send meal deletion here then reload json data sources
+                                        alert(node.attr('mealid'));
+                                        $(this).dialog("close");
+                                    },
+                                    Cancel: function () {
+                                        $(this).dialog("close");
+                                    }
+                                }
+                            });
+                        });
                     }
                 })
                 .bind("loaded.jstree", function (event, data) {
@@ -156,7 +182,17 @@
     });
 
 </script>
+
 <script>
+    /*
+     .########...#######............##..######.
+     .##.....##.##.....##...........##.##....##
+     .##.....##........##...........##.##......
+     .##.....##..#######............##..######.
+     .##.....##........##.....##....##.......##
+     .##.....##.##.....##.###.##....##.##....##
+     .########...#######..###..######...######.
+     */
     var parseDate = d3.time.format("%Y-%m-%d").parse;
     var margin = { 'left': 40, 'bottom': 20, 'top': 15, 'right': 0 },
             width = 640,
@@ -166,15 +202,15 @@
             clip = null;
 
     var maxWidth = margin.width;
-    var xaxis = null;
-    var yaxis = null;
+    var xAxis = null;
+    var yAxis = null;
     var line = null;
     function rescale(tx, ty) {
         //rescale path
         svg.select('.data').attr('d', line);
         //rescale axes
-        svg.select("g.x.axis").call(xaxis);
-        svg.select("g.y.axis").call(yaxis);
+        svg.select("g.x.axis").call(xAxis);
+        svg.select("g.y.axis").call(yAxis);
         //rescale dots
         svg.selectAll(".dot").attr("transform", "translate(" + tx + "," + ty + ")");
     }
@@ -232,9 +268,9 @@
                 .append('line')
                 .attr({
                     x1: xscale(xscale.domain()[0]),
-                    y1: yscale(1500),
+                    y1: yscale(2000),
                     x2: xscale(xscale.domain()[1]),
-                    y2: yscale(1500),
+                    y2: yscale(2000),
                     class: "threshold_line"
                 });
 
@@ -247,7 +283,7 @@
                 .attr('d', line);
 
 
-        xaxis = d3.svg.axis()
+        xAxis = d3.svg.axis()
                 .scale(xscale)
                 .orient("bottom")
                 .ticks(d3.time.weeks, 1);
@@ -256,9 +292,9 @@
                 .attr("clip-path", "url(#clip)")
                 .attr("class", "x axis")
                 .attr("transform", "translate(" + 0 + "," + h + ")")
-                .call(xaxis);
+                .call(xAxis);
 
-        yaxis = d3.svg.axis()
+        yAxis = d3.svg.axis()
                 .scale(yscale)
                 .orient("left")
                 .tickFormat(d3.format("f"))
@@ -266,7 +302,7 @@
         //draw y axis
         svg.append("g")
                 .attr("class", "y axis")
-                .call(yaxis)
+                .call(yAxis)
                 .attr("transform", "translate(" + margin.left + "," + 0 + ")")
                 .append("text")
                 .attr("transform", "rotate(-90)")
@@ -310,19 +346,29 @@
                     //lock y in place
                     ty = 0;
                     zoom.translate([tx, ty]);
-                    rescale(tx,ty);
+                    rescale(tx, ty);
 
                 });
         //pan all the way to the right initially
         var tx = width - maxWidth;
         var ty = 0;
         zoom.translate([tx, ty]);
-        rescale(tx,ty);
+        rescale(tx, ty);
         svg.call(zoom);
 
     });
 </script>
+
 <script>
+    /*
+     .########.....###....########....###....########....###....########..##.......########..######.
+     .##.....##...##.##......##......##.##......##......##.##...##.....##.##.......##.......##....##
+     .##.....##..##...##.....##.....##...##.....##.....##...##..##.....##.##.......##.......##......
+     .##.....##.##.....##....##....##.....##....##....##.....##.########..##.......######....######.
+     .##.....##.#########....##....#########....##....#########.##.....##.##.......##.............##
+     .##.....##.##.....##....##....##.....##....##....##.....##.##.....##.##.......##.......##....##
+     .########..##.....##....##....##.....##....##....##.....##.########..########.########..######.
+     */
     $(document).ready(function () {
         oTable = $('#table').dataTable({
             bProcessing: true,
@@ -348,10 +394,13 @@
         $('#table tbody tr').bind('dblclick', function () {
                     var aData = oTable.fnGetData(this);
                     var iId = aData[0];
+                    //add meal here
                     alert(iId);
                 }
         );
     }
 </script>
 </body>
+<div id="dialog-confirm" title="Meal Deletion">
+</div>
 </html>
