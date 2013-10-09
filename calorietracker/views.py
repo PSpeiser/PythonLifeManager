@@ -11,10 +11,30 @@ from functools import wraps
 
 def index(request):
     template = loader.get_template('calorietracker.html')
-    context = RequestContext(request, {
-    })
+    context = RequestContext(request, {})
     return HttpResponse(template.render(context))
 
+
+def calorie_graph(request):
+    template = loader.get_template('calorie_graph.html')
+    context = RequestContext(request, {})
+    return HttpResponse(template.render(context))
+
+def calorie_graph_js(request):
+    template = loader.get_template('calorie_graph.js')
+    context = RequestContext(request, {})
+    return HttpResponse(template.render(context))
+
+def meal_tree(request):
+    template = loader.get_template('meal_tree.html')
+    context = RequestContext(request, {})
+    return HttpResponse(template.render(context))
+
+
+def meal_tree_js(request):
+    template = loader.get_template('meal_tree.js')
+    context = RequestContext(request, {})
+    return HttpResponse(template.render(context))
 
 def meals_json(request):
     meals = Meal.objects.order_by('date')

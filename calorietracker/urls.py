@@ -12,7 +12,11 @@ urlpatterns = patterns('',
                        url(r'plot.json', views.plot_json, name='plot.json'),
                        url(r'invalidate_cache', views.invalidate_cache, name='invalidate_cache'),
                        url(r'food.json', views.food_json, name='food.json'),
-                       url(r'test',views.test,name='test'),
+                       url(r'test', views.test, name='test'),
+                       url(r'calorie_graph$', views.calorie_graph, name='calorie_graph'),
+                       url(r'calorie_graph.js',views.calorie_graph_js,name='calorie_graph.js'),
+                       url(r'meal_tree$', views.meal_tree, name='meal_tree'),
+                       url(r'meal_tree.js',views.meal_tree_js,name='meal_tree.js'),
 
 
 )

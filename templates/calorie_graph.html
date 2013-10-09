@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+    <script src="/static/jquery-1.10.2.js"></script>
+    <script>
+        $.ajaxSetup({
+            // Disable caching of AJAX responses
+            cache: false
+        });
+    </script>
+<script src="/static/d3.v3.js"></script>
+<style>
+    .red {
+        background-color: #B22222;
+    }
+
+    .green {
+        background-color: #90EE90;
+    }
+
+    body {
+        font: 12px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    .line {
+        fill: none;
+        stroke: steelblue;
+        stroke-width: 1.5px;
+    }
+
+    .axis path,
+    .axis line,
+    .domain {
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+        stroke-width: 1px;
+    }
+
+    path {
+        stroke: steelblue;
+        stroke-width: 2;
+        stroke-width: 1.5px;
+        fill: none;
+    }
+
+    .threshold_line {
+        stroke: red;
+        stroke-width: 1.5px;
+        stroke-opacity: 1;
+    }
+
+    path.data {
+        fill: transparent;
+        stroke: grey;
+        stroke-width: 2;
+    }
+
+    .threshold_line {
+        stroke: red;
+        stroke-width: 1.5px;
+        stroke-opacity: 1;
+    }
+
+    #tree {
+        width: 300px;
+        float: left;
+        border: 1px ridge darkgray;
+        margin: 2px;
+        padding: 5px;
+    }
+
+    #wrapper {
+        overflow: hidden;
+    }
+
+    svg {
+        float: left;
+        border: 1px ridge darkgray;
+        margin: 2px;
+    }
+
+    #table_wrapper {
+        float: left;
+        max-width: 178px;
+        overflow: auto;
+        margin: 2px;
+        border: 1px ridge darkgray;
+        padding: 5px;
+
+    }
+
+    #table_processing {
+        height: 0px;
+        padding: 0px;
+        margin: 0px;
+    }
+
+</style>
+<div id="svg_placeholder"></div>
+<script>
+    $.getScript('calorie_graph.js');
+</script>
+</body>
+</html>
