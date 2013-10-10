@@ -1,3 +1,14 @@
+/*
+ Required JS:
+ jquery
+ jquery.jstree
+ jquery.ui
+
+ Required HTML elements:
+ #tree: that will hold the tree
+
+ */
+
 $(document).ready(function () {
     $.ajaxSetup({
         cache: true
@@ -25,7 +36,7 @@ $(document).ready(function () {
             }
             else if (node.hasClass('meal')) {
                 $(function () {
-                    var $div = $('<div>',{id:'dialog-confirm',title:'Meal Deletion'})
+                    var $div = $('<div>', {id: 'dialog-confirm', title: 'Meal Deletion'})
                     $('body').append($div);
                     $div.text('Delete ' + node.text() + ' ?').dialog({
                         resizable: false,

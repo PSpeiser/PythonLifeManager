@@ -1,9 +1,11 @@
 /*
  Required JS:
- jquery.js
+ jquery
+ d3js
 
- Required HTML Elements:
+ Required HTML elements:
  #svg_wrapper: element that the svg will be appended to
+
  */
 
 $(document).ready(function () {
