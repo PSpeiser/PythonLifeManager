@@ -1,6 +1,7 @@
 from django.db import models
 import math
 
+
 class Food(models.Model):
     name = models.CharField(max_length=50, unique=True)
     kcal_per_100g = models.IntegerField()
@@ -21,3 +22,11 @@ class Meal(models.Model):
 
     def __unicode__(self):
         return '%s | %s | %s' % (self.date.strftime('%H:%M'), self.food.name, self.food.total_kcal)
+
+
+class Weight(models.Model):
+    kg = models.DecimalField(decimal_places=2, max_digits=5)
+    date = models.DateTimeField()
+
+    def __unicode__(self):
+        return '%s | %s' % (self.date.strftime('%Y-%m-%d %H:%M'), self.weight)

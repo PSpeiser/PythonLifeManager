@@ -34,7 +34,7 @@ $(document).ready(function () {
                         buttons: {
                             "Remove meal": function () {
                                 //send meal deletion here then reload json data sources
-                                alert(node.attr('mealid'));
+                                alert(node.attr('meal_id'));
                                 $(this).dialog("close");
                             },
                             "Cancel": function () {
@@ -45,8 +45,8 @@ $(document).ready(function () {
                 });
             }
         })
-        .bind("loaded.jstree", function (event, data) {
-            $("a").each(function () {
+        .bind("loaded.jstree refresh.jstree", function (event, data) {
+            $("#tree").find("a").each(function () {
                 var parent_color = $(this).parent().attr("jstree_color")
                 if (parent_color !== undefined) {
                     $(this).attr('class', parent_color);

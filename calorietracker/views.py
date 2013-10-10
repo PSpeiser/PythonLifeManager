@@ -4,9 +4,11 @@ from django.core import serializers
 from datetime import datetime, timedelta
 import json
 from django.template import RequestContext, loader
+from django.shortcuts import render
 from django.views.decorators.cache import cache_page
 from django.views.decorators.cache import patch_cache_control
 from functools import wraps
+from django.core.cache import cache
 
 
 def index(request):
@@ -14,6 +16,25 @@ def index(request):
     context = RequestContext(request, {})
     return HttpResponse(template.render(context))
 
+
+def add_meal(request):
+    if request.method == "POST":
+        try:
+            if 'food_id' in request.POST:
+                food_id = request.POST['food_id']
+                food = Food.objects.get(pk=food_id)
+                meal = Meal(food=food, date=datetime.now())
+                meal.save()
+                #clear the cache so the client can get the new data
+                cache.clear()
+                output = "Success"
+            else:
+                output = "Error food_id was not supplied"
+        except Exception as e:
+            output = "Error"
+    else:
+        output = "Method not supported"
+    return HttpResponse(output)
 
 def calorie_graph(request):
     template = loader.get_template('calorie_graph.html')
@@ -122,7 +143,7 @@ def jstree_json(request):
             d3day = {'data': str(day), 'children': [],
                      'attr': {'class': 'day', 'jstree_color': 'red' if day.total_kcal > 1500 else 'green'}}
             for meal in day.meals:
-                d3meal = {'data': str(meal), 'attr': {'class': 'meal', 'mealid': meal.id}}
+                d3meal = {'data': str(meal), 'attr': {'class': 'meal', 'meal_id': meal.id}}
                 d3day['children'].append(d3meal)
 
             #don't allow empty children lists
