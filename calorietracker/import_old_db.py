@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from calorietracker.models import Meal, Food
 import sqlite3
-
+from django.core.cache import cache
 
 def import_old_db(request):
     delete_current_db()
@@ -19,6 +19,7 @@ def import_old_db(request):
         m.save()
     c.close()
     conn.close()
+    cache.clear()
     return HttpResponse("Imported %d foods, %d meals" % (Food.objects.count(), Meal.objects.count()))
 
 
