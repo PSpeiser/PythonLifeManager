@@ -12,9 +12,7 @@ from django.core.cache import cache
 
 
 def index(request):
-    template = loader.get_template('calorietracker.html')
-    context = RequestContext(request, {})
-    return HttpResponse(template.render(context))
+    return render(request, 'calorietracker.html')
 
 
 def add_meal(request):
@@ -37,68 +35,29 @@ def add_meal(request):
     return HttpResponse(output)
 
 
-def calorie_graph(request):
-    template = loader.get_template('calorie_graph.html')
-    context = RequestContext(request, {})
-    return HttpResponse(template.render(context))
-
-
 def calorie_graph_js(request):
-    template = loader.get_template('calorie_graph.js')
-    context = RequestContext(request, {})
-    return HttpResponse(template.render(context))
-
-
-def meal_tree(request):
-    template = loader.get_template('meal_tree.html')
-    context = RequestContext(request, {})
-    return HttpResponse(template.render(context))
+    return render(request, 'calorie_graph.js')
 
 
 def meal_tree_js(request):
-    template = loader.get_template('meal_tree.js')
-    context = RequestContext(request, {})
-    return HttpResponse(template.render(context))
-
-
-def meals_json(request):
-    meals = Meal.objects.order_by('date')
-    output = serializers.serialize('json', meals, indent=2, use_natural_keys=True, )
-    return HttpResponse(output, content_type='application/json')
-
-
-def test_json(request):
-    return HttpResponse("")
-
-
-def test(request):
-    template = loader.get_template('test.html')
-    context = RequestContext(request, {})
-    return HttpResponse(template.render(context))
-
-
-def weeks_json(request):
-    weeks = get_weeks()
-
-    output = json.dumps(weeks, indent=2, cls=MyEncoder)
-    return HttpResponse(output, content_type='application/json')
+    return render(request, 'meal_tree.js')
 
 
 def get_weeks():
     meals = Meal.objects.order_by('date')
 
-    firstdt = meals[0].date if meals.count() > 0 else datetime.now()
-    firstdt = firstdt - timedelta(days=firstdt.weekday(), hours=firstdt.hour,
-                                  minutes=firstdt.minute, seconds=firstdt.second)
+    first_datetime = meals[0].date if meals.count() > 0 else datetime.now()
+    first_datetime = first_datetime - timedelta(days=first_datetime.weekday(), hours=first_datetime.hour,
+                                                minutes=first_datetime.minute, seconds=first_datetime.second)
 
-    lastdt = meals[meals.count() - 1].date if meals.count() > 0 else datetime.now()
-    lastdt = lastdt - timedelta(hours=lastdt.hour,
-                                minutes=lastdt.minute, seconds=lastdt.second)
-    lastdt = lastdt + timedelta(days=(6 - lastdt.weekday()), hours=23, minutes=59, seconds=59)
+    last_datetime = meals[meals.count() - 1].date if meals.count() > 0 else datetime.now()
+    last_datetime = last_datetime - timedelta(hours=last_datetime.hour,
+                                              minutes=last_datetime.minute, seconds=last_datetime.second)
+    last_datetime = last_datetime + timedelta(days=(6 - last_datetime.weekday()), hours=23, minutes=59, seconds=59)
 
     weeks = []
-    dt = firstdt
-    while dt < lastdt:
+    dt = first_datetime
+    while dt < last_datetime:
         week = Week(dt)
         for day in week.days:
             day.meals = [meal for meal in meals if day.contains(meal.date)]
@@ -126,6 +85,8 @@ def no_client_cache(decorated_function):
     return wrapper
 
 
+@no_client_cache
+@cache_page(60 * 15)
 def food_json(request):
     data = []
     for food in Food.objects.all().order_by('name'):
@@ -181,14 +142,14 @@ def jstree_json(request):
 @cache_page(60 * 15)
 def plot_json(request):
     weeks = get_weeks()
-    datapoints = []
+    data_points = []
     for week in weeks:
         for day in week.days:
             if datetime.now() >= day.begin:
-                datapoints.append({"date": day.begin.strftime("%Y-%m-%d"),
-                                   "kcal": day.total_kcal,
-                                   "text": str(day)})
-    output = json.dumps(datapoints, indent=2, cls=MyEncoder)
+                data_points.append({"date": day.begin.strftime("%Y-%m-%d"),
+                                    "kcal": day.total_kcal,
+                                    "text": str(day)})
+    output = json.dumps(data_points, indent=2, cls=MyEncoder)
     return HttpResponse(output, content_type='application/json')
 
 
@@ -240,6 +201,7 @@ class Day():
 
 
 class MyEncoder(json.JSONEncoder):
+    #This is too slow
     def default(self, obj):
         if isinstance(obj, datetime):
             return obj.isoformat()
