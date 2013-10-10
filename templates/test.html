@@ -48,7 +48,7 @@
     </style>
 </head>
 <body>
-<div id="svg_placeholder">
+<div id="svg_wrapper">
 </div>
 <div>
     TestText
@@ -71,7 +71,7 @@
 
         test = data;
 
-        svg = d3.select("#svg_placeholder")
+        svg = d3.select("#svg_wrapper")
                 .append("svg")
                 .attr("width", width)
                 .attr("height", height)

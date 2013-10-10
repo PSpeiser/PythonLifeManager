@@ -13,10 +13,9 @@
     <script src="/static/d3.v3.js"></script>
     <link rel="stylesheet" href="/static/themes/base/jquery-ui.css">
     <style>
-
-
         body {
             font: 12px sans-serif;
+            background-color: #eaeaea;
         }
 
         #tree {
@@ -25,14 +24,18 @@
             border: 1px ridge darkgray;
             margin: 2px;
             padding: 5px;
+            background-color: #eeeeee;
         }
 
         .red {
-            background-color: #B22222;
+            background-color: #A60C00;
+        }
+        .yellow{
+            background-color: #FFD300;
         }
 
         .green {
-            background-color: #90EE90;
+            background-color: #1DD300;
         }
 
         #wrapper {
@@ -40,15 +43,16 @@
         }
 
             /*calorie_graph*/
-        svg {
+        #calorie_graph, #svg_placeholder {
             float: left;
             border: 1px ridge darkgray;
             margin: 2px;
         }
-        #background_rect
-        {
-            fill: white;
+        #background_rect{
+            fill: #eeeeee;
         }
+
+
         .axis path,
         .axis line {
             fill: none;
@@ -117,12 +121,9 @@
     <script>
         function refreshElements() {
             $("#tree").jstree("refresh");
-            $("#svg_placeholder").empty();
-            $.getScript('calorie_graph.js');
+            $("#calorie_graph").trigger("reload");
             oTable.fnReloadAjax();
-        }
-        ;
-
+        };
     </script>
 </head>
 <body>
@@ -132,7 +133,7 @@
     <script>
         $.getScript('meal_tree.js');
     </script>
-    <div id="svg_placeholder"></div>
+    <div id="svg_wrapper"></div>
     <script>
         $.getScript('calorie_graph.js');
     </script>
@@ -245,8 +246,5 @@
         }, oSettings);
     };
 </script>
-
 </body>
-<div id="dialog-confirm" title="Meal Deletion">
-</div>
 </html>

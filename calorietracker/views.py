@@ -36,15 +36,18 @@ def add_meal(request):
         output = "Method not supported"
     return HttpResponse(output)
 
+
 def calorie_graph(request):
     template = loader.get_template('calorie_graph.html')
     context = RequestContext(request, {})
     return HttpResponse(template.render(context))
 
+
 def calorie_graph_js(request):
     template = loader.get_template('calorie_graph.js')
     context = RequestContext(request, {})
     return HttpResponse(template.render(context))
+
 
 def meal_tree(request):
     template = loader.get_template('meal_tree.html')
@@ -56,6 +59,7 @@ def meal_tree_js(request):
     template = loader.get_template('meal_tree.js')
     context = RequestContext(request, {})
     return HttpResponse(template.render(context))
+
 
 def meals_json(request):
     meals = Meal.objects.order_by('date')
@@ -138,10 +142,16 @@ def jstree_json(request):
     d = []
     for week in weeks:
         d3week = {'data': str(week), 'children': [],
-                  'attr': {'class': 'week', 'jstree_color': 'red' if week.total_kcal > 1500 * 7 else 'green'}}
+                  'attr': {'class': 'week',
+                           'jstree_color': 'red' if week.total_kcal > 2000 * 7
+                           else 'yellow' if week.total_kcal > 1500 * 7
+                           else 'green'}}
         for day in week.days:
             d3day = {'data': str(day), 'children': [],
-                     'attr': {'class': 'day', 'jstree_color': 'red' if day.total_kcal > 1500 else 'green'}}
+                     'attr': {'class': 'day',
+                              'jstree_color': 'red' if day.total_kcal > 2000
+                              else 'yellow' if day.total_kcal > 1500
+                              else 'green'}}
             for meal in day.meals:
                 d3meal = {'data': str(meal), 'attr': {'class': 'meal', 'meal_id': meal.id}}
                 d3day['children'].append(d3meal)
@@ -175,7 +185,9 @@ def plot_json(request):
     for week in weeks:
         for day in week.days:
             if datetime.now() >= day.begin:
-                datapoints.append({"date": day.begin.strftime("%Y-%m-%d"), "kcal": day.total_kcal})
+                datapoints.append({"date": day.begin.strftime("%Y-%m-%d"),
+                                   "kcal": day.total_kcal,
+                                   "text": str(day)})
     output = json.dumps(datapoints, indent=2, cls=MyEncoder)
     return HttpResponse(output, content_type='application/json')
 
@@ -201,7 +213,7 @@ class Week():
         return self.begin <= date <= self.end
 
     def __unicode__(self):
-        return '%s-%s | %s' % (self.begin.strftime('%Y.%m.%d'), self.end.strftime('%d'), str(self.total_kcal))
+        return '%s-%s | %s' % (self.begin.strftime('%Y-%m-%d'), self.end.strftime('%d'), str(self.total_kcal))
 
     def __str__(self):
         return unicode(self).encode('utf-8')
@@ -221,7 +233,7 @@ class Day():
         return self.begin <= date <= self.end
 
     def __unicode__(self):
-        return '%s | %s' % (self.begin.strftime('%Y.%m.%d'), str(self.total_kcal))
+        return '%s | %s' % (self.begin.strftime('%Y-%m-%d'), str(self.total_kcal))
 
     def __str__(self):
         return unicode(self).encode('utf-8')

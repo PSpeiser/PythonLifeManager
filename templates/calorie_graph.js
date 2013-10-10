@@ -1,3 +1,11 @@
+/*
+ Required JS:
+ jquery.js
+
+ Required HTML Elements:
+ #svg_wrapper: element that the svg will be appended to
+ */
+
 $(document).ready(function () {
     var parseDate = d3.time.format("%Y-%m-%d").parse;
     var margin = { 'left': 40, 'bottom': 20, 'top': 15, 'right': 0 },
@@ -27,15 +35,16 @@ $(document).ready(function () {
         data.forEach(function (d) {
             d.date = parseDate(d.date);
             d.kcal = +d.kcal;
+            d.text = d.text;
         });
 
-        svg = d3.select("#svg_placeholder")
+        svg = d3.select("#svg_wrapper")
             .append("svg")
+            .attr("id", "calorie_graph")
             .attr("width", width)
             .attr("height", height)
             .attr('cursor', 'move')
             .append("svg:g");
-
 
         var dateExtent = d3.extent(data, function (d) {
             return d.date
@@ -61,7 +70,6 @@ $(document).ready(function () {
             });
 
         //add a background rectangle to enable panning and background coloring
-        console.log(yscale(yscale.domain()[1]))
         svg.append("rect")
             .attr("id", "background_rect")
             .attr("x", 0)
@@ -144,7 +152,7 @@ $(document).ready(function () {
             })
             .append("svg:title")
             .text(function (d) {
-                return d.kcal
+                return d.text;
             });
 
         var zoom = d3.behavior.zoom()
@@ -171,5 +179,15 @@ $(document).ready(function () {
         rescale(tx, ty);
         svg.call(zoom);
 
+        //bind a reload handler
+        $("#calorie_graph").bind("reload", function () {
+            //this will keep the layout of the page intact during the reload
+            $("#calorie_graph").replaceWith("<div id='svg_placeholder' style='float:left;width:" + $("#calorie_graph").width()
+                + "px;height:" + $("#calorie_graph").height() + "px'>&nbsp;</div>");
+            $.getScript('calorie_graph.js');
+        });
+
+        //remove the placeholder if this script was reloaded
+        $("#svg_placeholder").remove();
     })
 });
