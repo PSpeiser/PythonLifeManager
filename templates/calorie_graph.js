@@ -94,7 +94,19 @@ $(document).ready(function () {
                 y1: yscale(2000),
                 x2: xscale(xscale.domain()[1]),
                 y2: yscale(2000),
-                class: "threshold_line"
+                class: "threshold_line red"
+            });
+
+        //draw threshold line
+        svg.append("g")
+            .attr("clip-path", "url(#clip)")
+            .append('line')
+            .attr({
+                x1: xscale(xscale.domain()[0]),
+                y1: yscale(1500),
+                x2: xscale(xscale.domain()[1]),
+                y2: yscale(1500),
+                class: "threshold_line green"
             });
 
         //draw path
