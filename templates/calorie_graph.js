@@ -60,6 +60,14 @@ $(document).ready(function () {
                 return yscale(d.kcal);
             });
 
+        //add a background rectangle to enable panning and background coloring
+        console.log(yscale(yscale.domain()[1]))
+        svg.append("rect")
+            .attr("id", "background_rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", width)
+            .attr("height", height)
 
         //add path clipping element
         svg.append("g").append("clipPath")
@@ -148,8 +156,8 @@ $(document).ready(function () {
                     tx = t[0],
                     ty = t[1];
 
-                tx = Math.min(tx, dataPointWidth*10);
-                tx = Math.max(tx, width - maxWidth - dataPointWidth*10);
+                tx = Math.min(tx, dataPointWidth * 10);
+                tx = Math.max(tx, width - maxWidth - dataPointWidth * 10);
                 //lock y in place
                 ty = 0;
                 zoom.translate([tx, ty]);
@@ -157,7 +165,7 @@ $(document).ready(function () {
 
             });
         //pan all the way to the right initially
-        var tx = width - maxWidth - dataPointWidth*10;
+        var tx = width - maxWidth - dataPointWidth * 10;
         var ty = 0;
         zoom.translate([tx, ty]);
         rescale(tx, ty);
