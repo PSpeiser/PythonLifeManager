@@ -43,21 +43,32 @@ def meal_tree_js(request):
     return render(request, 'meal_tree.js')
 
 
+def truncate_to_date(date):
+    return datetime(date.year, date.month, date.day)
+
+
+def truncate_to_week(date):
+    #make a new date with whatever date the previous monday was then remove the hour,minute,second components
+    return truncate_to_date(date - timedelta(date.weekday()))
+
+
 def get_weeks(max_days=0):
     if max_days == 0:
         meals = Meal.objects.order_by('date')
     else:
+        #retrieve meals starting from the week calculated with max_days
+        #truncate date to year,month,WEEK going to the previous monday
+        earliest_date = truncate_to_week(datetime.today() - timedelta(days=max_days))
+
         meals = Meal.objects.filter(date__lte=datetime.today(),
-                                    date__gt=datetime.today() - timedelta(days=max_days)).order_by('date')
+                                    date__gt=earliest_date).order_by('date')
 
     first_datetime = meals[0].date if meals.count() > 0 else datetime.now()
-    first_datetime = first_datetime - timedelta(days=first_datetime.weekday(), hours=first_datetime.hour,
-                                                minutes=first_datetime.minute, seconds=first_datetime.second)
+    first_datetime = truncate_to_week(first_datetime)
 
     last_datetime = meals[meals.count() - 1].date if meals.count() > 0 else datetime.now()
-    last_datetime = last_datetime - timedelta(hours=last_datetime.hour,
-                                              minutes=last_datetime.minute, seconds=last_datetime.second)
-    last_datetime = last_datetime + timedelta(days=(6 - last_datetime.weekday()), hours=23, minutes=59, seconds=59)
+    last_datetime = truncate_to_week(last_datetime)
+    last_datetime = last_datetime + timedelta(days=6, hours=23, minutes=59, seconds=59)
 
     weeks = []
     dt = first_datetime

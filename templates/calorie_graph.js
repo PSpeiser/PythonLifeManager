@@ -53,7 +53,7 @@ $(document).ready(function () {
         });
         var timeDiff = Math.abs(dateExtent[0].getTime() - dateExtent[1].getTime());
         var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-        maxWidth = diffDays * dataPointWidth;
+        maxWidth = Math.max(diffDays * dataPointWidth,w);
 
         var xscale = d3.time.scale().domain(dateExtent).range([0, maxWidth]);
         var kcalExtent = d3.extent(data, function (d) {
