@@ -43,8 +43,12 @@ def meal_tree_js(request):
     return render(request, 'meal_tree.js')
 
 
-def get_weeks():
-    meals = Meal.objects.order_by('date')
+def get_weeks(max_days=0):
+    if max_days == 0:
+        meals = Meal.objects.order_by('date')
+    else:
+        meals = Meal.objects.filter(date__lte=datetime.today(),
+                                    date__gt=datetime.today() - timedelta(days=max_days)).order_by('date')
 
     first_datetime = meals[0].date if meals.count() > 0 else datetime.now()
     first_datetime = first_datetime - timedelta(days=first_datetime.weekday(), hours=first_datetime.hour,
