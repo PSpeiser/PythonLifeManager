@@ -119,9 +119,9 @@
         function refreshElements() {
             $("#tree").jstree("refresh");
             $("#calorie_graph").trigger("reload");
+            $("weight_graph").trigger("reload");
             oTable.fnReloadAjax();
         }
-        ;
     </script>
 </head>
 <body>
@@ -188,15 +188,30 @@
     function clickRowHandler() {
         $('#table tbody tr').bind('dblclick', function () {
                     var aData = oTable.fnGetData(this);
-                    var food_id = aData[0];
-                    //add meal here
-                    $.post("add_meal", {
-                        food_id: food_id,
-                        csrfmiddlewaretoken: '{{ csrf_token }}'
-                    }, function (data) {
-                        refreshElements();
-                    })
-
+                    var $div = $('<div>', {id: 'dialog-confirm', title: 'Eat Meal'})
+                    $('body').append($div);
+                    $div.text('Add ' + aData[1] + ' ?').dialog({
+                        resizable: false,
+                        height: 130,
+                        modal: true,
+                        buttons: {
+                            "Add meal": function () {
+                                //send meal deletion here then reload json data sources
+                                var food_id = aData[0];
+                                //add meal here
+                                $.post("add_meal", {
+                                    food_id: food_id,
+                                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                                }, function (data) {
+                                    refreshElements();
+                                })
+                                $(this).dialog("close");
+                            },
+                            "Cancel": function () {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
                 }
         );
     }
