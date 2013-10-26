@@ -29,4 +29,4 @@ class Weight(models.Model):
     date = models.DateTimeField()
 
     def __unicode__(self):
-        return '%s | %s' % (self.date.strftime('%Y-%m-%d %H:%M'), self.weight)
+        return '%s | %s' % (self.date.strftime('%Y-%m-%d %H:%M'), self.kg)

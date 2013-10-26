@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from calorietracker.models import Meal, Food
+from calorietracker.models import Meal, Food, Weight
 from django.core import serializers
 from datetime import datetime, timedelta
 import json
@@ -9,6 +9,7 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.cache import patch_cache_control
 from functools import wraps
 from django.core.cache import cache
+import decimal
 
 
 def index(request):
@@ -41,6 +42,10 @@ def calorie_graph_js(request):
 
 def meal_tree_js(request):
     return render(request, 'meal_tree.js')
+
+
+def weight_graph_js(request):
+    return render(request, 'weight_graph.js')
 
 
 def truncate_to_date(date):
@@ -168,6 +173,17 @@ def plot_json(request):
     return HttpResponse(output, content_type='application/json')
 
 
+def weights_json(request):
+    weights = Weight.objects.all()
+    data_points = []
+    for weight in weights:
+        data_points.append({"date": weight.date.strftime("%Y-%m-%d"),
+                            "kg": weight.kg,
+                            "text": str(weight)})
+    output = json.dumps(data_points, indent=2, cls=MyEncoder)
+    return HttpResponse(output, content_type='application/json')
+
+
 def invalidate_cache(request):
     from django.core.cache import cache
 
@@ -220,6 +236,9 @@ class MyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime):
             return obj.isoformat()
+        if isinstance(obj, decimal.Decimal):
+            return float(obj)
+
         if isinstance(obj, Week):
             return {'begin': obj.begin, 'end': obj.end, 'days': obj.days, 'total_kcal': obj.total_kcal}
         if isinstance(obj, Day):

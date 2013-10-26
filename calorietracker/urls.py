@@ -12,5 +12,6 @@ urlpatterns = patterns('',
                        url(r'^calorie_graph.js$', views.calorie_graph_js, name='calorie_graph.js'),
                        url(r'^meal_tree.js$', views.meal_tree_js, name='meal_tree.js'),
                        url(r'^add_meal$', views.add_meal, name='add_meal'),
-
+                       url(r'^weights.json$',views.weights_json, name='weights.json'),
+                       url(r'^weight_graph.js$',views.weight_graph_js, name='weight_graph.js')
 )

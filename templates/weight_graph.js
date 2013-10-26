@@ -4,7 +4,7 @@
  d3js
 
  Required HTML elements:
- #calorie_graph_wrapper: element that the svg will be appended to
+ #weight_graph_wrapper: element that the svg will be appended to
 
  */
 
@@ -25,24 +25,24 @@ $(document).ready(function () {
 
     function rescale(tx, ty) {
         //rescale path
-        calorie_svg.select('.data').attr('d', line);
+        weight_svg.select('.data').attr('d', line);
         //rescale axes
-        calorie_svg.select("g.x.axis").call(xAxis);
-        calorie_svg.select("g.y.axis").call(yAxis);
+        weight_svg.select("g.x.axis").call(xAxis);
+        weight_svg.select("g.y.axis").call(yAxis);
         //rescale dots
-        calorie_svg.selectAll(".dot").attr("transform", "translate(" + tx + "," + ty + ")");
+        weight_svg.selectAll(".dot").attr("transform", "translate(" + tx + "," + ty + ")");
     }
 
-    d3.json("plot.json", function (error, data) {
+    d3.json("weights.json", function (error, data) {
         data.forEach(function (d) {
             d.date = parseDate(d.date);
-            d.kcal = +d.kcal;
+            d.kcal = +d.kg;
             d.text = d.text;
         });
 
-        calorie_svg = d3.select("#calorie_graph_wrapper")
+        weight_svg = d3.select("#weight_graph_wrapper")
             .append("svg")
-            .attr("id", "calorie_graph")
+            .attr("id", "weight_graph")
             .attr("width", width)
             .attr("height", height)
             .attr('cursor', 'move')
@@ -72,7 +72,7 @@ $(document).ready(function () {
             });
 
         //add a background rectangle to enable panning and background coloring
-        calorie_svg.append("rect")
+        weight_svg.append("rect")
             .attr("id", "background_rect")
             .attr("x", 0)
             .attr("y", 0)
@@ -80,7 +80,7 @@ $(document).ready(function () {
             .attr("height", height)
 
         //add path clipping element
-        calorie_svg.append("g").append("clipPath")
+        weight_svg.append("g").append("clipPath")
             .attr("id", "clip")
             .append("rect")
             .attr("width", maxWidth)
@@ -88,7 +88,7 @@ $(document).ready(function () {
             .attr("transform", "translate(" + margin.left + "," + 0 + ")")
 
         //draw threshold line
-        calorie_svg.append("g")
+        weight_svg.append("g")
             .attr("clip-path", "url(#clip)")
             .append('line')
             .attr({
@@ -100,7 +100,7 @@ $(document).ready(function () {
             });
 
         //draw threshold line
-        calorie_svg.append("g")
+        weight_svg.append("g")
             .attr("clip-path", "url(#clip)")
             .append('line')
             .attr({
@@ -112,7 +112,7 @@ $(document).ready(function () {
             });
 
         //draw path
-        calorie_svg.append('g')
+        weight_svg.append('g')
             .attr("clip-path", "url(#clip)")
             .datum(data)
             .append('path')
@@ -125,7 +125,7 @@ $(document).ready(function () {
             .orient("bottom")
             .ticks(d3.time.weeks, 1);
 
-        calorie_svg.append("g")
+        weight_svg.append("g")
             .attr("clip-path", "url(#clip)")
             .attr("class", "x axis")
             .attr("transform", "translate(" + 0 + "," + h + ")")
@@ -137,7 +137,7 @@ $(document).ready(function () {
             .tickFormat(d3.format("f"))
 
         //draw y axis
-        calorie_svg.append("g")
+        weight_svg.append("g")
             .attr("class", "y axis")
             .call(yAxis)
             .attr("transform", "translate(" + margin.left + "," + 0 + ")")
@@ -149,7 +149,7 @@ $(document).ready(function () {
             .text("KCal");
 
         //draw dots for data points
-        calorie_svg.append("g").attr("clip-path", "url(#clip)")
+        weight_svg.append("g").attr("clip-path", "url(#clip)")
             .selectAll(".dot")
             .data(data)
             .enter().append("circle")
@@ -191,17 +191,17 @@ $(document).ready(function () {
         var ty = 0;
         zoom.translate([tx, ty]);
         rescale(tx, ty);
-        calorie_svg.call(zoom);
+        weight_svg.call(zoom);
 
         //bind a reload handler
-        $("#calorie_graph").bind("reload", function () {
+        $("#weight_graph").bind("reload", function () {
             //this will keep the layout of the page intact during the reload
-            $("#calorie_graph").replaceWith("<div id='calorie_graph_placeholder' style='float:left;width:" + $("#calorie_graph").width()
-                + "px;height:" + $("#calorie_graph").height() + "px'>&nbsp;</div>");
-            $.getScript('calorie_graph.js');
+            $("#weight_graph").replaceWith("<div id='weight_graph_placeholder' style='float:left;width:" + $("#weight_graph").width()
+                + "px;height:" + $("#weight_graph").height() + "px'>&nbsp;</div>");
+            $.getScript('weight_graph.js');
         });
 
         //remove the placeholder if this script was reloaded
-        $("#calorie_graph_placeholder").remove();
+        $("#weight_graph_placeholder").remove();
     })
 });

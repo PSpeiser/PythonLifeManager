@@ -31,7 +31,8 @@
             background-color: #A60C00;
             stroke: #A60C00;
         }
-        .yellow{
+
+        .yellow {
             background-color: #FFD300;
             stroke: #FFD300;
         }
@@ -51,10 +52,10 @@
             border: 1px ridge darkgray;
             margin: 2px;
         }
-        #background_rect{
+
+        #background_rect {
             fill: #eeeeee;
         }
-
 
         .axis path,
         .axis line {
@@ -119,7 +120,8 @@
             $("#tree").jstree("refresh");
             $("#calorie_graph").trigger("reload");
             oTable.fnReloadAjax();
-        };
+        }
+        ;
     </script>
 </head>
 <body>
@@ -129,7 +131,7 @@
     <script>
         $.getScript('meal_tree.js');
     </script>
-    <div id="svg_wrapper"></div>
+    <div id="calorie_graph_wrapper"></div>
     <script>
         $.getScript('calorie_graph.js');
     </script>
@@ -144,7 +146,12 @@
         <tbody>
         </tbody>
     </table>
+    <div id="weight_graph_wrapper"></div>
+    <script>
+        $.getScript("weight_graph.js")
+    </script>
 </div>
+
 
 <script>
 
