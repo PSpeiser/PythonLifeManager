@@ -45,7 +45,14 @@ $(document).ready(function () {
                         buttons: {
                             "Remove meal": function () {
                                 //send meal deletion here then reload json data sources
-                                alert(node.attr('meal_id'));
+                                var meal_id = node.attr('meal_id');
+                                //add meal here
+                                $.post("delete_meal", {
+                                    meal_id: meal_id,
+                                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                                }, function (data) {
+                                    refreshElements();
+                                })
                                 $(this).dialog("close");
                             },
                             "Cancel": function () {

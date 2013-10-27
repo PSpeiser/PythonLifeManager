@@ -87,30 +87,6 @@ $(document).ready(function () {
             .attr("height", h)
             .attr("transform", "translate(" + margin.left + "," + 0 + ")")
 
-        //draw threshold line
-        weight_svg.append("g")
-            .attr("clip-path", "url(#clip)")
-            .append('line')
-            .attr({
-                x1: xscale(xscale.domain()[0]),
-                y1: yscale(2000),
-                x2: xscale(xscale.domain()[1]),
-                y2: yscale(2000),
-                class: "threshold_line red"
-            });
-
-        //draw threshold line
-        weight_svg.append("g")
-            .attr("clip-path", "url(#clip)")
-            .append('line')
-            .attr({
-                x1: xscale(xscale.domain()[0]),
-                y1: yscale(1500),
-                x2: xscale(xscale.domain()[1]),
-                y2: yscale(1500),
-                class: "threshold_line green"
-            });
-
         //draw path
         weight_svg.append('g')
             .attr("clip-path", "url(#clip)")

@@ -36,6 +36,22 @@ def add_meal(request):
     return HttpResponse(output)
 
 
+def delete_meal(request):
+    if request.method == "POST":
+        try:
+            if 'meal_id' in request.POST:
+                meal_id = request.POST['meal_id']
+                meal = Meal.objects.get(pk=meal_id)
+                meal.delete()
+                cache.clear()
+                output = "Success"
+        except Exception as e:
+            output = "Error"
+    else:
+        output = "Method not supported"
+    return HttpResponse(output)
+
+
 def calorie_graph_js(request):
     return render(request, 'calorie_graph.js')
 
