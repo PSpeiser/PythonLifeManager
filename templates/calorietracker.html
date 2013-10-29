@@ -231,9 +231,9 @@
     function clickRowHandler() {
         $('#table tbody td.css-button').bind('click', function () {
                     aData = oTable.fnGetData(this.parentElement);
-                    var $div = $('<div>', {id: 'dialog-confirm', title: 'Eat Meal'})
-                    $('body').append($div);
-                    $div.text('Add ' + aData[1] + ' ?').dialog({
+                    var div = $('<div>', {id: 'dialog-confirm', title: 'Add Meal'})
+                    $('body').append(div);
+                    div.text('Add ' + aData[1] + ' ?').dialog({
                         resizable: false,
                         height: 130,
                         modal: true,
@@ -254,6 +254,12 @@
                                 $(this).dialog("close");
                             }
                         }
+                    });
+                    div.parent().position({
+                        my: 'center bottom+25',
+                        at: 'center',
+                        of: this.parentElement,
+                        collision: 'none'
                     });
                 }
         );
