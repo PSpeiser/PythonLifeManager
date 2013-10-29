@@ -122,7 +122,6 @@ def no_client_cache(decorated_function):
 
 
 @no_client_cache
-@cache_page(60 * 15)
 def food_json(request):
     data = []
     for food in Food.objects.all().order_by('name'):
@@ -133,7 +132,6 @@ def food_json(request):
 
 
 @no_client_cache
-@cache_page(60 * 15)
 def jstree_json(request):
     weeks = get_weeks()
     d = []
@@ -175,7 +173,6 @@ def jstree_json(request):
 
 
 @no_client_cache
-@cache_page(60 * 15)
 def plot_json(request):
     weeks = get_weeks()
     data_points = []
