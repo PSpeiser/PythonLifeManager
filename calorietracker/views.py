@@ -18,6 +18,10 @@ def index(request):
     return render(request, 'calorietracker.html')
 
 
+def mobile(request):
+    return render(request, 'mobile.html')
+
+
 @csrf_exempt
 def add_weight(request):
     if request.method == "POST":

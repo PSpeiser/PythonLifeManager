@@ -16,4 +16,6 @@ urlpatterns = patterns('',
                        url(r'^weights.json$', views.weights_json, name='weights.json'),
                        url(r'^weight_graph.js$', views.weight_graph_js, name='weight_graph.js'),
                        url(r'^add_weight', views.add_weight, name='add_weight'),
+                       url(r'^mobile',views.mobile,name='mobile'),
+
 )
