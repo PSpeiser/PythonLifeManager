@@ -153,7 +153,8 @@ def no_client_cache(decorated_function):
 def food_json(request):
     data = []
     for food in Food.objects.all().order_by('name'):
-        data.append([food.id, food.name, food.total_kcal])
+        if not food.hidden:
+            data.append([food.id, food.name, food.total_kcal])
     d = {'aaData': data}
     output = json.dumps(d, indent=2)
     return HttpResponse(output, content_type='application/json')
