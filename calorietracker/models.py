@@ -25,8 +25,14 @@ class Meal(models.Model):
 
 
 class Weight(models.Model):
-    kg = models.DecimalField(decimal_places=2, max_digits=5)
-    date = models.DateTimeField()
+    date = models.DateField(unique=True)
+    kg = models.DecimalField(decimal_places=1, max_digits=4)
+    fat = models.DecimalField(decimal_places=1, max_digits=4)
+    water = models.DecimalField(decimal_places=1, max_digits=4)
+    muscles = models.DecimalField(decimal_places=1, max_digits=4)
+    bone_kg = models.DecimalField(decimal_places=1, max_digits=4)
+    bmr = models.PositiveIntegerField()
+    amr = models.PositiveIntegerField()
 
     def __unicode__(self):
         return '%s | %s' % (self.date.strftime('%Y-%m-%d %H:%M'), self.kg)

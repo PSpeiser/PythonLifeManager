@@ -10,10 +10,38 @@ from django.views.decorators.cache import patch_cache_control
 from functools import wraps
 from django.core.cache import cache
 import decimal
+from django.views.decorators.csrf import csrf_exempt
+import django.db
 
 
 def index(request):
     return render(request, 'calorietracker.html')
+
+
+@csrf_exempt
+def add_weight(request):
+    if request.method == "POST":
+        try:
+            w = Weight()
+            w.date = request.POST['date']
+            w.kg = request.POST['kg']
+            w.fat = request.POST['fat']
+            w.water = request.POST['water']
+            w.muscles = request.POST['muscles']
+            w.bone_kg = request.POST['bone_kg']
+            w.bmr = request.POST['bmr']
+            w.amr = request.POST['amr']
+            #date must be unique so an error will be raised here if it's not
+            try:
+                w.save()
+            except django.db.IntegrityError:
+                pass
+            output = "Success"
+        except:
+            output = "Error"
+    else:
+        output = "Method not supported"
+    return HttpResponse(output)
 
 
 def add_meal(request):
