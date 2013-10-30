@@ -18,7 +18,7 @@ $(document).ready(function () {
         clip = null;
 
     var maxWidth = margin.width;
-    var dataPointWidth = 10;
+    var dataPointWidth = 5;
     var xAxis = null;
     var yAxis = null;
     var line = null;
@@ -55,7 +55,7 @@ $(document).ready(function () {
         var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
         maxWidth = Math.max(diffDays * dataPointWidth,w);
 
-        var xscale = d3.time.scale().domain(dateExtent).range([0, maxWidth]);
+        var xscale = d3.time.scale().domain(dateExtent).range([20, maxWidth]);
         var kcalExtent = d3.extent(data, function (d) {
             return d.kcal;
         })
