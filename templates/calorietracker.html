@@ -1,12 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Calorietracker</title>
     <script src="/static/jquery-1.10.2.js"></script>
-    <script>
-        $.ajaxSetup({
-            cache: true
-        });
-    </script>
     <script src="/static/jquery.dataTables.js"></script>
     <script src="/static/jquery.jstree.js"></script>
     <script src="/static/ui/jquery-ui.js"></script>
@@ -49,7 +45,8 @@
 
             /*calorie_graph*/
         #calorie_graph, #calorie_graph_placeholder,
-        #weight_graph, #weight_graph_placeholder {
+        #weight_graph, #weight_graph_placeholder
+        ,#graph_wrapper{
             float: left;
             border: 1px ridge darkgray;
             margin: 2px;
@@ -130,7 +127,7 @@
             border-spacing: 0.5rem;
         }
 
-        td.css-button {
+        td.css-button, a.css-button {
             /* Structure */
             zoom: 1;
             font-size: 100%;
@@ -167,13 +164,21 @@
     </script>
 </head>
 <body>
-<a href="/admin">Admin</a>
-
+<p>
+<a class="css-button" href="/admin" target="_blank">Admin</a>
+<a class="css-button" href="/admin/calorietracker/food/add" target="_blank">Add Food</a>
+</p>
 <div id="wrapper">
-    <div id="calorie_graph_wrapper"></div>
-    <script>
-        $.getScript('calorie_graph.js');
-    </script>
+    <div id="graph_wrapper">
+        <div id="calorie_graph_wrapper"></div>
+        <script>
+            $.getScript('calorie_graph.js');
+        </script>
+        <div id="weight_graph_wrapper"></div>
+        <script>
+            $.getScript("weight_graph.js")
+        </script>
+    </div>
     <div id="tree"></div>
     <script>
         $.getScript('meal_tree.js');
@@ -191,10 +196,7 @@
     </table>
 
 </div>
-<div id="weight_graph_wrapper"></div>
-<script>
-    $.getScript("weight_graph.js")
-</script>
+
 
 <script>
 

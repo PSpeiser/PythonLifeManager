@@ -12,7 +12,7 @@ $(document).ready(function () {
     var parseDate = d3.time.format("%Y-%m-%d").parse;
     var margin = { 'left': 40, 'bottom': 20, 'top': 15, 'right': 0 },
         width = 640,
-        height = 480,
+        height = 240,
         w = width - margin.left - margin.right,
         h = height - margin.top - margin.bottom,
         clip = null;
