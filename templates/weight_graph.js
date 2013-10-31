@@ -130,7 +130,7 @@ $(document).ready(function () {
             .data(data)
             .enter().append("circle")
             .attr("class", "dot")
-            .attr("r", 3.5)
+            .attr("r", 2.5)
             .attr("cx", function (d) {
                 return xscale(d.date);
             })
