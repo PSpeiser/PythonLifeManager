@@ -220,7 +220,7 @@ def plot_json(request):
 
 
 def weights_json(request):
-    weights = Weight.objects.all()
+    weights = Weight.objects.order_by('date')
     data_points = []
     for weight in weights:
         data_points.append({"date": weight.date.strftime("%Y-%m-%d"),
