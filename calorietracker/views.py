@@ -19,7 +19,7 @@ def index(request):
 
 
 def mobile(request):
-    return render(request, 'mobile.html')
+    return render(request, 'mobile.html', {'foods': Food.objects.filter(hidden=False).order_by('name')})
 
 
 @csrf_exempt

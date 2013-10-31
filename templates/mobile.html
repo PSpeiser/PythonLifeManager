@@ -4,8 +4,6 @@
 <head>
     <title>Calorietracker</title>
     <script src="/static/jquery-1.10.2.js"></script>
-    <script src="/static/jquery.dataTables.js"></script>
-    <script src="/static/jquery.jstree.js"></script>
     <script src="/static/ui/jquery-ui.js"></script>
     <link rel="stylesheet" href="/static/themes/base/jquery-ui.css">
     <style>
@@ -14,35 +12,15 @@
             background-color: #eaeaea;
         }
 
-            /*
-            ########    ###    ########  ##       ########     ######   ######   ######
-               ##      ## ##   ##     ## ##       ##          ##    ## ##    ## ##    ##
-               ##     ##   ##  ##     ## ##       ##          ##       ##       ##
-               ##    ##     ## ########  ##       ######      ##        ######   ######
-               ##    ######### ##     ## ##       ##          ##             ##       ##
-               ##    ##     ## ##     ## ##       ##          ##    ## ##    ## ##    ##
-               ##    ##     ## ########  ######## ########     ######   ######   ######
-            */
-        #table_wrapper {
-            float: left;
-            max-width: 260px;
-            overflow: auto;
-            margin: 2px;
-            border: 1px ridge darkgray;
-            padding: 5px;
-        }
-
-        #table_processing {
-            height: 0px;
-            padding: 0px;
-            margin: 0px;
-            visibility: hidden;
-        }
-
         thead, th {
             border: 1px solid darkgray;
             border-collapse: collapse;
             border-spacing: 0.5rem;
+        }
+
+        tr {
+            min-height: 3em;
+            height: 3em;
         }
 
         td.css-button, a.css-button {
@@ -85,6 +63,38 @@
         }
 
     </style>
+    <script>
+        function addMeal(element, food_name, food_id) {
+            var div = $('<div>', {id: 'dialog-confirm', title: 'Add Meal'})
+            $('body').append(div);
+            div.text('Add ' + food_name + ' ?').dialog({
+                resizable: false,
+                height: 130,
+                modal: true,
+                buttons: {
+                    "Add meal": function () {
+                        //send meal deletion here then reload json data sources
+                        //add meal here
+                        $.post("add_meal", {
+                            food_id: food_id,
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        });
+                        $(this).dialog("close");
+                    },
+                    "Cancel": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+            div.parent().position({
+                my: 'center',
+                at: 'center',
+                of: element.parentElement,
+                collision: 'fit'
+            });
+        }
+        ;
+    </script>
 </head>
 <body>
 <p>
@@ -94,84 +104,21 @@
 </p>
 <table id="table">
     <thead>
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>KCal</th>
+    <tr role="row">
+        <th class="css-button" rowspan="1" colspan="1"
+            style="width: 196px;">Name
+        </th>
+        <th rowspan="1" colspan="1" style="width: 36px;">KCal</th>
     </tr>
     </thead>
     <tbody>
+    {% for food in foods %}
+        <tr>
+            <td class="css-button" onclick="addMeal(this,'{{ food.name }}', {{ food.id }})">{{ food.name }}</td>
+            <td>{{ food.total_kcal }}</td>
+        </tr>
+    {% endfor %}
     </tbody>
 </table>
-<script>
-
-    /*
-     .########.....###....########....###....########....###....########..##.......########..######.
-     .##.....##...##.##......##......##.##......##......##.##...##.....##.##.......##.......##....##
-     .##.....##..##...##.....##.....##...##.....##.....##...##..##.....##.##.......##.......##......
-     .##.....##.##.....##....##....##.....##....##....##.....##.########..##.......######....######.
-     .##.....##.#########....##....#########....##....#########.##.....##.##.......##.............##
-     .##.....##.##.....##....##....##.....##....##....##.....##.##.....##.##.......##.......##....##
-     .########..##.....##....##....##.....##....##....##.....##.########..########.########..######.
-     */
-    $(document).ready(function () {
-        oTable = $('#table').dataTable({
-            bProcessing: true,
-            sAjaxSource: 'food.json',
-            "aoColumns": [
-                /* ID */   { "bSearchable": false, "bVisible": false },
-                /* Name */ {"sClass": "css-button"},
-                /* KCal */ null
-            ],
-            bSort: false,
-            "bFilter": false,
-            "bInfo": false,
-            bAutoWidth: false,
-            sScrollX: 'auto',
-            sScrollY: "447px",
-            bScrollCollapse: true,
-            bPaginate: false,
-            fnDrawCallback: function () {
-                clickRowHandler();
-            }});
-    });
-    function clickRowHandler() {
-        $('#table tbody td.css-button').bind('click', function () {
-                    aData = oTable.fnGetData(this.parentElement);
-                    var div = $('<div>', {id: 'dialog-confirm', title: 'Add Meal'})
-                    $('body').append(div);
-                    div.text('Add ' + aData[1] + ' ?').dialog({
-                        resizable: false,
-                        height: 130,
-                        modal: true,
-                        buttons: {
-                            "Add meal": function () {
-                                //send meal deletion here then reload json data sources
-                                var food_id = aData[0];
-                                //add meal here
-                                $.post("add_meal", {
-                                    food_id: food_id,
-                                    csrfmiddlewaretoken: '{{ csrf_token }}'
-                                }, function (data) {
-                                    refreshElements();
-                                })
-                                $(this).dialog("close");
-                            },
-                            "Cancel": function () {
-                                $(this).dialog("close");
-                            }
-                        }
-                    });
-                    div.parent().position({
-                        my: 'center bottom+25',
-                        at: 'center',
-                        of: this.parentElement,
-                        collision: 'fit'
-                    });
-                }
-        );
-    }
-    ;
-</script>
 </body>
 </html>

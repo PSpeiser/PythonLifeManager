@@ -2,9 +2,12 @@
   <dictionary name="Doskir">
     <words>
       <w>calorietracker</w>
+      <w>cancel&quot;</w>
       <w>csrf</w>
+      <w>csrfmiddlewaretoken</w>
       <w>jstree</w>
       <w>kcal</w>
+      <w>meal&quot;</w>
     </words>
   </dictionary>
 </component>
