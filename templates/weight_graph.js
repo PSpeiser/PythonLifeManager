@@ -3,6 +3,7 @@
  jquery
  d3js
 
+
  Required HTML elements:
  #weight_graph_wrapper: element that the svg will be appended to
 
@@ -32,8 +33,11 @@ $(document).ready(function () {
         //rescale dots
         weight_svg.selectAll(".dot").attr("transform", "translate(" + tx + "," + ty + ")");
     }
-
-    d3.json("weights.json", function (error, data) {
+    if(typeof weight_graph_max_weeks == 'undefined')
+    {
+        weight_graph_max_weeks = 0;
+    }
+    d3.json("weights.json?max_weeks=" + weight_graph_max_weeks, function (error, data) {
         data.forEach(function (d) {
             d.date = parseDate(d.date);
             d.kcal = +d.kg;

@@ -9,8 +9,14 @@
  #tree: that will hold the tree
 
  */
+function jstree_url_function() {
+    return "jstree.json?max_weeks=" + meal_tree_max_weeks;
+}
 
 $(document).ready(function () {
+    if (typeof meal_tree_max_weeks == 'undefined') {
+        meal_tree_max_weeks = 0;
+    }
     $.ajaxSetup({
         cache: true
     });
@@ -20,7 +26,7 @@ $(document).ready(function () {
         },
         "json_data": {
             "ajax": {
-                "url": "jstree.json"
+                "url": jstree_url_function
             }
         },
         "themes": {

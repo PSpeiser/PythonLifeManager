@@ -11,87 +11,87 @@ from functools import wraps
 from django.core.cache import cache
 import decimal
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
 import django.db
 
 
+@require_GET
 def index(request):
     return render(request, 'calorietracker.html')
 
 
+@require_GET
 def mobile(request):
     return render(request, 'mobile.html', {'foods': Food.objects.filter(hidden=False).order_by('name')})
 
 
 @csrf_exempt
+@require_POST
 def add_weight(request):
-    if request.method == "POST":
+    try:
+        w = Weight()
+        w.date = request.POST['date']
+        w.kg = request.POST['kg']
+        w.fat = request.POST['fat']
+        w.water = request.POST['water']
+        w.muscles = request.POST['muscles']
+        w.bone_kg = request.POST['bone_kg']
+        w.bmr = request.POST['bmr']
+        w.amr = request.POST['amr']
+        #date must be unique so an exception will be raised here if it's not
         try:
-            w = Weight()
-            w.date = request.POST['date']
-            w.kg = request.POST['kg']
-            w.fat = request.POST['fat']
-            w.water = request.POST['water']
-            w.muscles = request.POST['muscles']
-            w.bone_kg = request.POST['bone_kg']
-            w.bmr = request.POST['bmr']
-            w.amr = request.POST['amr']
-            #date must be unique so an error will be raised here if it's not
-            try:
-                w.save()
-            except django.db.IntegrityError:
-                pass
-            output = "Success"
-        except:
-            output = "Error"
-    else:
-        output = "Method not supported"
+            w.save()
+        except django.db.IntegrityError:
+            pass
+        output = "Success"
+    except:
+        output = "Error"
     return HttpResponse(output)
 
 
+@require_POST
 def add_meal(request):
-    if request.method == "POST":
-        try:
-            if 'food_id' in request.POST:
-                food_id = request.POST['food_id']
-                food = Food.objects.get(pk=food_id)
-                meal = Meal(food=food, date=datetime.now())
-                meal.save()
-                #clear the cache so the client can get the new data
-                cache.clear()
-                output = "Success"
-            else:
-                output = "Error food_id was not supplied"
-        except Exception as e:
-            output = "Error"
-    else:
-        output = "Method not supported"
+    try:
+        if 'food_id' in request.POST:
+            food_id = request.POST['food_id']
+            food = Food.objects.get(pk=food_id)
+            meal = Meal(food=food, date=datetime.now())
+            meal.save()
+            #clear the cache so the client can get the new data
+            cache.clear()
+            output = "Success"
+        else:
+            output = "Error food_id was not supplied"
+    except Exception as e:
+        output = "Error"
     return HttpResponse(output)
 
 
+@require_POST
 def delete_meal(request):
-    if request.method == "POST":
-        try:
-            if 'meal_id' in request.POST:
-                meal_id = request.POST['meal_id']
-                meal = Meal.objects.get(pk=meal_id)
-                meal.delete()
-                cache.clear()
-                output = "Success"
-        except Exception as e:
-            output = "Error"
-    else:
-        output = "Method not supported"
+    try:
+        if 'meal_id' in request.POST:
+            meal_id = request.POST['meal_id']
+            meal = Meal.objects.get(pk=meal_id)
+            meal.delete()
+            cache.clear()
+            output = "Success"
+    except Exception as e:
+        output = "Error"
     return HttpResponse(output)
 
 
+@require_GET
 def calorie_graph_js(request):
     return render(request, 'calorie_graph.js')
 
 
+@require_GET
 def meal_tree_js(request):
     return render(request, 'meal_tree.js')
 
 
+@require_GET
 def weight_graph_js(request):
     return render(request, 'weight_graph.js')
 
@@ -105,14 +105,12 @@ def truncate_to_week(date):
     return truncate_to_date(date - timedelta(date.weekday()))
 
 
-def get_weeks(max_days=0):
-    if max_days == 0:
+def get_weeks(weeks=0):
+    if weeks <= 0:
         meals = Meal.objects.order_by('date')
     else:
-        #retrieve meals starting from the week calculated with max_days
-        #truncate date to year,month,WEEK going to the previous monday
-        earliest_date = truncate_to_week(datetime.today() - timedelta(days=max_days))
-
+        earliest_date = truncate_to_week(datetime.today())
+        earliest_date = earliest_date - timedelta(days=(weeks - 1) * 7)
         meals = Meal.objects.filter(date__lte=datetime.today(),
                                     date__gt=earliest_date).order_by('date')
 
@@ -154,6 +152,7 @@ def no_client_cache(decorated_function):
 
 
 @no_client_cache
+@require_GET
 def food_json(request):
     data = []
     for food in Food.objects.all().order_by('name'):
@@ -165,8 +164,12 @@ def food_json(request):
 
 
 @no_client_cache
+@require_GET
 def jstree_json(request):
-    weeks = get_weeks()
+    max_weeks = 0
+    if 'max_weeks' in request.GET:
+        max_weeks = int(request.GET['max_weeks'])
+    weeks = get_weeks(max_weeks)
     d = []
     for week in weeks:
         d3week = {'data': str(week), 'children': [],
@@ -206,8 +209,12 @@ def jstree_json(request):
 
 
 @no_client_cache
-def plot_json(request):
-    weeks = get_weeks()
+@require_GET
+def calories_json(request):
+    max_weeks = 0
+    if 'max_weeks' in request.GET:
+        max_weeks = int(request.GET['max_weeks'])
+    weeks = get_weeks(max_weeks)
     data_points = []
     for week in weeks:
         for day in week.days:
@@ -219,8 +226,19 @@ def plot_json(request):
     return HttpResponse(output, content_type='application/json')
 
 
+@no_client_cache
+@require_GET
 def weights_json(request):
-    weights = Weight.objects.order_by('date')
+    max_weeks = 0
+    if 'max_weeks' in request.GET:
+        max_weeks = int(request.GET['max_weeks'])
+    if max_weeks == 0:
+        weights = Weight.objects.order_by('date')
+    else:
+        earliest_date = truncate_to_week(datetime.today())
+        earliest_date = earliest_date - timedelta(days=(max_weeks - 1) * 7)
+        weights = Weight.objects.filter(date__lte=datetime.today(),
+                                        date__gt=earliest_date).order_by('date')
     data_points = []
     for weight in weights:
         data_points.append({"date": weight.date.strftime("%Y-%m-%d"),

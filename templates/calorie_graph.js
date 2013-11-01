@@ -32,8 +32,11 @@ $(document).ready(function () {
         //rescale dots
         calorie_svg.selectAll(".dot").attr("transform", "translate(" + tx + "," + ty + ")");
     }
-
-    d3.json("plot.json", function (error, data) {
+    if(typeof calorie_graph_max_weeks == 'undefined')
+    {
+        calorie_graph_max_weeks = 0;
+    }
+    d3.json("calories.json?max_weeks=" + calorie_graph_max_weeks, function (error, data) {
         data.forEach(function (d) {
             d.date = parseDate(d.date);
             d.kcal = +d.kcal;

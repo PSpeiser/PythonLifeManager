@@ -45,8 +45,7 @@
 
             /*calorie_graph*/
         #calorie_graph, #calorie_graph_placeholder,
-        #weight_graph, #weight_graph_placeholder
-        ,#graph_wrapper{
+        #weight_graph, #weight_graph_placeholder, #graph_wrapper {
             float: left;
             border: 1px ridge darkgray;
             margin: 2px;
@@ -146,7 +145,10 @@
             border-radius: 4px;
             box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25) inset, 0 2px 0 rgba(255, 255, 255, 0.30) inset, 0 1px 2px rgba(0, 0, 0, 0.15);
         }
-
+        #week_select
+        {
+            vertical-align: middle;
+        }
         td {
             box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25) inset, 0 2px 0 rgba(255, 255, 255, 0.30) inset, 0 1px 2px rgba(0, 0, 0, 0.15);
             text-align: center;
@@ -155,19 +157,34 @@
 
     </style>
     <script>
+        meal_tree_max_weeks = 4;
+        calorie_graph_max_weeks = 4;
+        weight_graph_max_weeks = 4;
+
         function refreshElements() {
             $("#tree").jstree("refresh");
             $("#calorie_graph").trigger("reload");
-            $("weight_graph").trigger("reload");
+            $("#weight_graph").trigger("reload");
             oTable.fnReloadAjax();
         }
     </script>
 </head>
 <body>
 <p>
-<a class="css-button" href="/admin" target="_blank">Admin</a>
-<a class="css-button" href="/admin/calorietracker/food/add" target="_blank">Add Food</a>
-<a class="css-button" href="/mobile">Mobile</a>
+    <a class="css-button" href="/admin" target="_blank">Admin</a>
+    <a class="css-button" href="/admin/calorietracker/food/add" target="_blank">Add Food</a>
+    <a class="css-button" href="/mobile">Mobile</a>
+    <select id="week_select" onchange="  meal_tree_max_weeks=this.value;
+                                        calorie_graph_max_weeks=this.value;
+                                        weight_graph_max_weeks=this.value;
+                                        refreshElements();"
+            >
+        <option value="0">All</option>
+        <option value="1">1 Week</option>
+        <option value="2">2 Weeks</option>
+        <option value="4" selected="True">4 Weeks</option>
+        <option value="8">8 Weeks</option>
+    </select>
 </p>
 <div id="wrapper">
     <div id="graph_wrapper">
