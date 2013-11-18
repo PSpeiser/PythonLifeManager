@@ -62,9 +62,10 @@ $(document).ready(function () {
         var kcalExtent = d3.extent(data, function (d) {
             return d.kcal;
         })
+
         var yscale = d3.scale.linear()
             .range([h, 0])
-            .domain([kcalExtent[0]*0.9, kcalExtent[1] * 1.1]);
+            .domain([0, kcalExtent[1] * 1.1]);
 
         line = d3.svg.line()
             .x(function (d) {

@@ -38,6 +38,9 @@ $(document).ready(function () {
         weight_graph_max_weeks = 0;
     }
     d3.json("weights.json?max_weeks=" + weight_graph_max_weeks, function (error, data) {
+
+        var latest = data[data.length -1];
+
         data.forEach(function (d) {
             d.date = parseDate(d.date);
             d.kcal = +d.kg;
@@ -148,6 +151,14 @@ $(document).ready(function () {
             .text(function (d) {
                 return d.text;
             });
+
+        weight_svg.append("text")
+        .attr("x", (width / 2))
+        .attr("y", 0 + margin.top)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("text-decoration", "underline")
+        .text("Latest: " + latest.kg);
 
         var zoom = d3.behavior.zoom()
             .scaleExtent([1, 1])
