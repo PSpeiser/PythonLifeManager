@@ -1,5 +1,4 @@
 # Django settings for PythonLifeManager project.
-
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -9,10 +8,12 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+import os
+PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'PythonLifeManager.sqlite3', # Or path to database file if using sqlite3.
+        'NAME': os.path.join(PROJECT_PATH,'PythonLifeManager.sqlite3'), # Or path to database file if using sqlite3.
         # The following settings are not used with sqlite3:
         'USER': '',
         'PASSWORD': '',
